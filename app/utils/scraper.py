@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from lxml import html
 import requests
 from nltk.tokenize import sent_tokenize

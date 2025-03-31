@@ -1,8 +1,9 @@
-# Pydantic model for query
-from pydantic import BaseModel
+# -*- coding: utf-8 -*-
 
-DEFAULT_COLLECTION_NAME = "Data Source Connection"
+from pydantic import BaseModel
 
 class QueryRequest(BaseModel):
     query: str
-    collection_name: str = DEFAULT_COLLECTION_NAME
+    collection_name: str
+    filter_dict: dict
+    

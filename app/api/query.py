@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 from fastapi import APIRouter, HTTPException
 from app.models.query import QueryRequest
@@ -15,7 +16,11 @@ async def query_docs(request: QueryRequest):
     query_service = QueryService()
     
     try:
-        final_response = query_service.query_document(query=request.query, collection_name=request.collection_name)
+        final_response = query_service.query_document(
+            query=request.query, 
+            collection_name=request.collection_name, 
+            filter_dict=request.filter_dict
+            )
         
         if not final_response:
             raise HTTPException(status_code=404, detail="No relevant documents found.")

@@ -1,4 +1,4 @@
-# Database interactions (queries)
+# -*- coding: utf-8 -*-
 
 import psycopg2
 from app.core.config import Config

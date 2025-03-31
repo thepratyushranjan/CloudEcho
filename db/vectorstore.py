@@ -1,4 +1,4 @@
-#PGVector integration for storing embeddings
+# -*- coding: utf-8 -*-
 
 import uuid
 from app.core.config import Config
@@ -24,35 +24,6 @@ class PGVectorStore:
         except Exception as e:
             raise Exception(f"Error connecting to PostgreSQL: {e}")
 
-    # def store_embeddings(self, chunks: list, embeddings: list):
-    #     """
-    #     Stores document chunks and their corresponding embeddings in the PostgreSQL database.
-    #     """
-    #     try:
-    #         documents = []
-    #         expected_dimension = None
-
-    #         for chunk, embedding in zip(chunks, embeddings):
-    #             if expected_dimension is None:
-    #                 expected_dimension = len(embedding)
-
-    #             if len(embedding) != expected_dimension:
-    #                 raise ValueError(
-    #                     f"Inconsistent embedding dimension. Expected {expected_dimension}, got {len(embedding)} for chunk: {chunk[:50]}..."
-    #                 )
-    #             # Ensure embeddings are floats
-    #             embedding = [float(x) for x in embedding]
-    #             doc = Document(page_content=chunk, metadata={"content": chunk, "embedding": embedding})
-    #             doc.id = str(uuid.uuid4())
-    #             documents.append(doc)
-
-    #         print(f"Number of documents to add: {len(documents)}")
-    #         if documents:
-    #             self.vector_store.add_documents(documents)
-    #         else:
-    #             print("No documents to add.")
-    #     except Exception as e:
-    #         raise Exception(f"Error storing embeddings in the database: {e}")
 
     def store_embeddings(self, chunks: list, embeddings: list, source_identifier: str):
         try:
