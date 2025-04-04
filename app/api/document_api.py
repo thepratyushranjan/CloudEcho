@@ -1,8 +1,8 @@
 # This file contains the API endpoints for the document service.
 
 from fastapi import APIRouter, HTTPException
-from app.models.document_query import DocumentRequest
-from app.services.document_service import DocumentService
+from models.document_query import DocumentRequest
+from services.document_service import DocumentService
 
 router = APIRouter()
 

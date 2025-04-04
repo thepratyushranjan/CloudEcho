@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import google.generativeai as genai
-from app.core.config import Config
+from config.config import Config
 
 class EmbeddingGenerator:
     def __init__(self, embedding_model_name="models/embedding-001"):
