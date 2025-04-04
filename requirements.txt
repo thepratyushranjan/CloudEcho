@@ -1,7 +1,7 @@
 fastapi==0.115.11
 uvicorn==0.34.0
 SQLAlchemy==2.0.39
-pgvector==0.4.0
+pgvector
 langchain==0.3.21
 langchain-core==0.3.46
 langchain-google-genai==2.1.0
@@ -17,3 +17,7 @@ requests==2.32.3
 python-dotenv==1.0.1
 PyYAML==6.0.2
 pytest==8.3.5
+google-generativeai
+google-genai
+lxml
+nltk
