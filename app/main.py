@@ -1,8 +1,17 @@
+import asyncio
+from contextlib import asynccontextmanager
 from fastapi import FastAPI,Request
-from app.api import query, document_api
+from api import query, document_api
+from db.models.migrator import migrate_all
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Documentation Scraper API", version="1.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await asyncio.to_thread(migrate_all)
+    yield
+
+app = FastAPI(title="Documentation Scraper API", version="1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

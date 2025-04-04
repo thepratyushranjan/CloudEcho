@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from app.core.config import Config
-from app.utils.embedding import EmbeddingGenerator
+from config.config import Config
+from utils.embedding import EmbeddingGenerator
 from langchain_postgres.vectorstores import PGVector
 import json
 

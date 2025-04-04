@@ -8,9 +8,9 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - POSTGRES_CONNECTION=${POSTGRES_CONNECTION}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - LOGGING_LEVEL=${LOGGING_LEVEL:-INFO}
+      - POSTGRES_CONNECTION=postgresql+psycopg://postgres:postgres@host.docker.internal:5432/app
+      - GEMINI_API_KEY=AIzaSyAker6F4E8-U6drPx76tC8gFHv1dU9I2Ww
+      - LOGGING_LEVEL=DEBUG
     volumes:
       - ./app:/app/app
     restart: unless-stopped

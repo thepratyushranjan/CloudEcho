@@ -1,6 +1,6 @@
 import re
-from app.utils.scraper import WebScraper
-from app.utils.embedding import EmbeddingGenerator
+from utils.scraper import WebScraper
+from utils.embedding import EmbeddingGenerator
 from db.vectorstore import PGVectorStore
 
 class DocumentService:

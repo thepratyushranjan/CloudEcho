@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from fastapi import APIRouter, HTTPException
-from app.models.query import QueryRequest
-from app.services.query_service import QueryService
+from models.query import QueryRequest
+from services.query_service import QueryService
 
 router = APIRouter()
 

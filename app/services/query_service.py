@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from app.utils.similarity_search import perform_similarity_search
-from app.utils.llm import LlmGenerator
+from utils.similarity_search import perform_similarity_search
+from utils.llm import LlmGenerator
 
 
 class QueryService:

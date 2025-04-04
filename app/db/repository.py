@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import psycopg2
-from app.core.config import Config
+from config.config import Config
 from langchain_postgres.vectorstores import PGVector
 
 class PGVectorStore:

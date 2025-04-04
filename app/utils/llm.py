@@ -2,7 +2,7 @@
 
 from google import genai
 from google.genai import types
-from app.core.config import Config
+from config.config import Config
 import os
 
 class LlmGenerator:

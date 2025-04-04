@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import uuid
-from app.core.config import Config
+from config.config import Config
 from langchain_postgres.vectorstores import PGVector
-from app.utils.embedding import EmbeddingGenerator
+from utils.embedding import EmbeddingGenerator
 from langchain.docstore.document import Document
 
 class PGVectorStore:
