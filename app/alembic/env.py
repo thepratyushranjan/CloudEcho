@@ -2,13 +2,14 @@
 from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
-from config.config import Config 
+from config.config import Config
+from db.models.models import Base 
 
 # this is the Alembic Config object, which provides
 config = context.config
 fileConfig(config.config_file_name)
 config.set_main_option("sqlalchemy.url", Config.POSTGRES_CONNECTION)
-target_metadata = None
+target_metadata = Base.metadata
 
 def run_migrations_offline():
     url = config.get_main_option("sqlalchemy.url")

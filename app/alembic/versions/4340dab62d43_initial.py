@@ -16,8 +16,8 @@ def table_exists(table_name, conn):
 
 def upgrade():
     conn = op.get_bind()
-    # Ensure the uuid-ossp extension is available for UUID generation.
     op.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";')
+    op.execute('CREATE EXTENSION IF NOT EXISTS vector;')
 
     # Create the 'document_chunks' table if it doesn't exist.
     if not table_exists('document_chunks', conn):

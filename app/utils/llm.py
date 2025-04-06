@@ -29,18 +29,6 @@ class LlmGenerator:
         except Exception as e:
             raise Exception(f"Error generating response for combined prompt: {e}")
 
-    # def generate_query_response(self, combined_prompt: dict) -> str:
-    #     try:
-    #         response = self.client.models.generate_content(
-    #             model=self.llm_model_name,
-    #             config=types.GenerateContentConfig(system_instruction=self.system_instruction),
-    #             contents=combined_prompt
-    #         )
-    #         print(response.text)
-    #         return response.text
-    #     except Exception as e:
-    #         raise Exception(f"Error generating embedding for combined prompt: {e}")
-
     def llm_query(self, combined_prompt: dict) -> str:
         return self.generate_query_response(combined_prompt)
 
