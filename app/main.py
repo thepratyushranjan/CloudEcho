@@ -2,7 +2,7 @@ import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from db.models.migrator import migrate_all
-from api import query, document_api
+from api import query, document_api, simple_query
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -14,6 +14,7 @@ app = FastAPI(title="Documentation Scraper API", version="1.0", lifespan=lifespa
 # Use the app instance to include routers
 app.include_router(query.router, prefix="/query", tags=["Query"])
 app.include_router(document_api.router, prefix="/document", tags=["Document"])
+app.include_router(simple_query.router, prefix="/simple-query", tags=["Simple Query"])
 
 @app.get("/")
 async def root(request: Request):
