@@ -16,9 +16,12 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 # Download the NLTK data resource required for tokenization
 RUN python -c "import nltk; nltk.download('punkt_tab')"
-# Copy the application code from the host's "app" folder into the container's "app" folder
-COPY app/ /app/
+# Copy the current directory contents into the container at /app
+COPY . /app/
 # Expose port 8000 to the host
 EXPOSE 8000
+# Verify files were copied correctly (for debugging)
+RUN ls -la /app
+
 # Run the FastAPI application using uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
