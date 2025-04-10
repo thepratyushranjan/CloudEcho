@@ -1,0 +1,38 @@
+[
+  {
+    "query": "When to Choose Kubernetes on AWS vs. GCP vs. Azure for Real-Time Applications?",
+    "answer": "Real-time applications require low latency, rapid scalability, and tight service integration. On AWS, EKS is ideal for ecosystems built on AWS with extensive native services. GCP's GKE is known for its straightforward setup and excellent scalability, particularly when integrated with advanced data analytics services. Azure’s AKS is optimal for organizations embedded in the Microsoft ecosystem, providing seamless integration with Azure AD and related tools. Refer to the respective E2E guides for Kubernetes, AWS, Azure, and GCP for specific trade-offs and optimizations."
+  },
+  {
+    "query": "When Should an Application Switch from EC2 to ECS/Fargate?",
+    "answer": "The decision is based on the need for operational efficiency versus granular control. EC2 is best when full control over instances is necessary, allowing complete environment customization. However, if managing infrastructure becomes burdensome or if your application benefits from automated scalability and reduced operational overhead, migrating to ECS/Fargate is recommended. This is especially true for microservices or stateless applications that can effectively utilize container orchestration."
+  },
+  {
+    "query": "How Do Savings Plans Compare with Spot Instances for Batch Processing?",
+    "answer": "Savings Plans provide predictable cost savings for steady and predictable workloads, but they require a long-term commitment (one to three years). Conversely, Spot Instances offer significant discounts—often up to 90%—but come with the risk of interruption. For batch processing workloads that are fault-tolerant and can handle restarts, Spot Instances are typically the most cost-effective. The choice ultimately depends on whether workload stability or cost-savings under interruption risks is the priority."
+  },
+  {
+    "query": "What’s the Best Pricing Model for Workloads Under 30 Minutes on Alibaba Cloud?",
+    "answer": "For short-duration workloads, the on-demand, pay-per-use pricing model is optimal because it strictly charges for the compute time used. This avoids the cost overhead of reserved instances and is particularly suitable for transient or bursty jobs running under 30 minutes. The Alibaba Cloud E2E guide highlights on-demand pricing as the most effective approach for such workloads."
+  },
+  {
+    "query": "What is the Best EC2 Instance Type for Machine Learning Inference Under $50/Month?",
+    "answer": "The best instance type depends on your workload’s requirements for performance and cost. For light-to-moderate ML inference, general-purpose burstable instances such as the T3 or T4 series are recommended. If GPU acceleration is essential, consider using smaller GPU instances available via spot pricing to keep monthly costs under $50. Regularly revisiting instance recommendations using dynamic cost-analysis and recommendation tools can help ensure you always use the best instance type relative to current pricing."
+  },
+  {
+    "query": "Based on Workload Characteristics, Which Cloud (AWS, GCP, Azure, Alibaba) Offers the Best Performance-to-Cost Ratio?",
+    "answer": "There is no universal answer since the best performance-to-cost ratio depends on the specific characteristics of your workload. AWS and GCP are often preferred for compute-heavy tasks due to extensive instance portfolios and competitive spot pricing. Azure might be ideal for organizations leveraging Microsoft services and hybrid environments, whereas Alibaba could present attractive pricing for data-intensive or region-specific workloads. Cost simulation tools and dynamic recommendation engines are vital for profiling workloads and determining the optimal provider based on current cost and performance data."
+  },
+  {
+    "query": "If a Lambda Function Costs $100 to Process a Batch Job, How Much Would the Same Workload Cost on GCP Cloud Functions?",
+    "answer": "A direct cost comparison between AWS Lambda and GCP Cloud Functions is challenging due to their differing pricing models. Factors such as execution time, memory allocation, and invocation frequency affect the overall cost. Generally, GCP may offer comparable or lower costs if your workload benefits from sustained usage discounts and optimized resource allocation. For an accurate cost comparison, using pricing calculators or integrated cost simulation tools to model your specific workload metrics is recommended."
+  },
+  {
+    "query": "For a Compute-Heavy ML Workload, Is It Better to Use EC2, Azure VMs, or GCP Compute Engine?",
+    "answer": "For compute-intensive ML workloads, the choice depends on factors like hardware acceleration needs, instance availability, and pricing strategies. AWS EC2 offers a wide range of GPU and compute-optimized instances, often enhanced by spot pricing options. Azure VMs provide tight integration with Microsoft’s ML and hybrid cloud solutions, making them attractive for organizations within that ecosystem. GCP Compute Engine benefits from sustained use discounts and high-performance computing options. Leveraging performance-to-cost simulation tools can help you determine the best fit based on your workload’s requirements."
+  },
+  {
+    "query": "When to Use Bigtable vs. BigQuery for Large-Scale Logging?",
+    "answer": "The decision between Bigtable and BigQuery hinges on the use case. Bigtable is optimized for real-time, low-latency operations, making it ideal for applications that require quick writes and rapid access to streaming logs or operational dashboards. In contrast, BigQuery is designed for analytical queries on large datasets and is best for running complex, ad-hoc queries to extract insights from historical logging data. Choose Bigtable for immediate operational needs and BigQuery for in-depth analytical processing."
+  }
+]

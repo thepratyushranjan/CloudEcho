@@ -30,3 +30,10 @@ class LangchainPgEmbedding(Base):
     embedding = Column(Vector(), nullable=False)
     document = Column(String, nullable=False)
     cmetadata = Column(JSONB, nullable=True)
+
+class FAQChunk(Base):
+    __tablename__ = "faq"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    query = Column(Text, nullable=False)
+    answer = Column(Text, nullable=False)
+    embedding = Column(Vector(), nullable=False)
