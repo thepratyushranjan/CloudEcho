@@ -71,19 +71,6 @@ def upgrade():
         print("Table 'langchain_pg_embedding' created.")
     else:
         print("Table 'langchain_pg_embedding' already exists.")
-    
-    # Create the 'faq' table if it doesn't exist.
-    if not table_exists('faq', conn):
-        op.create_table(
-            'faq',
-            sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True),
-            sa.Column('query', sa.Text(), nullable=False),
-            sa.Column('answer', sa.Text(), nullable=False),
-            sa.Column('embedding', Vector(), nullable=False),
-        )
-        print("Table 'faq' created.")
-    else:
-        print("Table 'faq' already exists.")
 
 def downgrade():
     op.drop_table('langchain_pg_embedding')

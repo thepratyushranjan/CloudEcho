@@ -1,7 +1,9 @@
 import re
+import json
 from utils.scraper import WebScraper
 from utils.embedding import EmbeddingGenerator
 from db.vectorstore import PGVectorStore
+from typing import Optional
 
 class DocumentService:
     CONSTANT_XPATH = "/html/body/div[3]/main/div/div[3]"
@@ -10,10 +12,18 @@ class DocumentService:
         self.scraper = WebScraper()
         self.embedding_generator = EmbeddingGenerator()
         
-    def scrape_and_store(self, url: str, collection_name: str, source_identifier: str):
+    def scrape_and_store(self, url: str, collection_name: str, source_identifier: str, json_filepath: Optional[str] = None):
         """Scrapes, cleans, chunks, embeds, and stores documentation from a URL."""
         try:
-            document_text = self.scraper.scrape_by_xpath(url, self.CONSTANT_XPATH)
+            if url:
+                document_text = self.scraper.scrape_by_xpath(url, self.CONSTANT_XPATH)
+            else:
+                if not json_filepath:
+                    raise Exception("URL is empty and no JSON file provided")
+                with open(json_filepath, "r") as f:
+                    json_data = json.load(f)
+                document_text = "\n\n".join(item["answer"] for item in json_data if "answer" in item)
+            
             cleaned_data = self._clean_text(document_text)
             chunks = self.scraper.chunk_text(cleaned_data)
             embeddings = self.embedding_generator.generate_embeddings(chunks)
