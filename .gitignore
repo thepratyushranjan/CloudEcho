@@ -4,3 +4,11 @@ __pycache__
 *.pyc
 *.pyo
 *.pyd
+.aider.chat.history.md
+.aider.input.history
+.aider.tags.cache.v4/cache.db
+.aider.tags.cache.v4/cache.db-shm
+.aider.tags.cache.v4/cache.db-wal
+.vscode/settings.json
+app/__pycache__/*
+app/__pycache__/*
