@@ -24,7 +24,6 @@ class LlmGenerator:
                 if hasattr(chunk, "text"):
                     print(chunk.text, end="")
                     response_text += chunk.text
-            print(response_text)
             return response_text
         except Exception as e:
             raise Exception(f"Error generating response for combined prompt: {e}")
