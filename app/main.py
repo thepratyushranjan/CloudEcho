@@ -20,11 +20,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.include_router(query.router, prefix="/query", tags=["Query"])
-app.include_router(document_api.router, prefix="/document", tags=["Document"])
-app.include_router(simple_query.router, prefix="/simple-query", tags=["Simple Query"])
-app.include_router(details_analysis.router, prefix="/details-analysis", tags=["Details Analysis"])
-
+app.include_router(query.router, prefix="/chat-agent", tags=["Query"])
+app.include_router(document_api.router, prefix="/chat-agent", tags=["Document"])
+app.include_router(simple_query.router, prefix="/chat-agent", tags=["Simple Query"])
+app.include_router(details_analysis.router, prefix="/chat-agent", tags=["Details Analysis"])
 @app.get("/")
 async def root(request: Request):
     """
