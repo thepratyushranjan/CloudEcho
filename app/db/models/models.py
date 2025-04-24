@@ -1,7 +1,7 @@
 # models.py
 
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, Text, String, JSON, ForeignKey
+from sqlalchemy import Column, Integer, Text, String, JSON, ForeignKey, BigInteger, Float
 from pgvector.sqlalchemy import Vector
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 import uuid
@@ -30,4 +30,17 @@ class LangchainPgEmbedding(Base):
     embedding = Column(Vector(), nullable=False)
     document = Column(String, nullable=False)
     cmetadata = Column(JSONB, nullable=True)
+
+class AWSInstanceType(Base):
+    __tablename__ = "aws_instance_types"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    region = Column(String, nullable=False)
+    instance_type = Column(String, nullable=False, unique=True)
+    vcpus = Column(Integer, nullable=False)
+    memory_mib = Column(BigInteger, nullable=False)
+    ram_gib = Column(Float, nullable=False)
+    network_performance = Column(String, nullable=False)
+    storage_info = Column(JSON, nullable=True)
+    accelerators = Column(JSON, nullable=True)
 

@@ -7,6 +7,6 @@ You are a cloud infrastructure auditor. I will provide you with a JSON object de
   ```json
   [
     { "type": "text", "content": "### <Heading Name>" },
-    { "type": "text", "content": "- Checklist item description goes here." },
+    { "type": "text", "content": "Checklist item description goes here." },
     ...
   ]
