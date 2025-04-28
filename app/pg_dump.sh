@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # === Configuration ===
-CONTAINER_NAME="pg-vector-db"
+CONTAINER_NAME="PGVector"
 DB_USER="postgres"
 DB_NAME="app"
 DUMP_FILE_NAME="pgvector_backup_$(date +%Y%m%d_%H%M%S).dump"
