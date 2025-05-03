@@ -1,14 +1,15 @@
 import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI,Request
-from api import query, document_api, simple_query, details_analysis, checklist_analysis
+from api import query, document_api, simple_query, details_analysis, checklist_analysis, ocr
 from db.models.migrator import migrate_all
 from fastapi.middleware.cors import CORSMiddleware
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await asyncio.to_thread(migrate_all)
+    # await asyncio.to_thread(migrate_all)
+    print("Starting Application...",flush=True)
     yield
 
 app = FastAPI(title="Documentation Scraper API", version="1.0", lifespan=lifespan)
@@ -25,6 +26,8 @@ app.include_router(document_api.router, prefix="/chat-agent", tags=["Document"])
 app.include_router(simple_query.router, prefix="/chat-agent", tags=["Simple Query"])
 app.include_router(details_analysis.router, prefix="/chat-agent", tags=["Details Analysis"])
 app.include_router(checklist_analysis.router, prefix="/chat-agent", tags=["Checklist Analysis"])
+# Add endpoints /invoice-ocr
+app.include_router(ocr.router, tags=["OCR"], prefix="/ocr")
 @app.get("/")
 async def root(request: Request):
     """
