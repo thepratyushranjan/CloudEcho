@@ -9,5 +9,5 @@ class Config:
     """Configuration settings loaded from environment variables."""
 
     POSTGRES_CONNECTION = os.getenv("POSTGRES_CONNECTION")
-    GEMINI_API_KEY = "AIzaSyDXNmJdM1u_HLEa8HK-G1IFmiHBu-h932c"
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
     LOGGING_LEVEL = os.getenv("LOGGING_LEVEL", "INFO")

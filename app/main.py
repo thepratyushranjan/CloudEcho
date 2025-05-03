@@ -8,8 +8,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # await asyncio.to_thread(migrate_all)
-    print("Starting Application...",flush=True)
+    await asyncio.to_thread(migrate_all)
+    # print("Starting Application...",flush=True)
     yield
 
 app = FastAPI(title="Documentation Scraper API", version="1.0", lifespan=lifespan)
