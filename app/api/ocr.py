@@ -8,17 +8,11 @@ router = APIRouter()
 
 @router.post("/invoice")
 async def invoice_ocr(request: OcrRequest):
-    """
-    Queries the documentation database using vector search.
-    The endpoint receives a query (and optionally a collection_name),
-    generates its embedding, performs a vector search, and returns the final answer.
-    """
-    invoice_service = OcrService()
+    
+    invoice_service = OcrService(ocr_type="invoice")
     
     try:
-        # print(request.base64_string,flush=True)
-        # print(type(request.base64_string),flush=True)
-        final_response = invoice_service.process_ocr(request.base64_string, ocr_type="invoice")
+        final_response = invoice_service.process_ocr(request.base64_string)
         
         if not final_response:
             raise HTTPException(status_code=404, detail="No relevant documents found.")
@@ -31,17 +25,11 @@ async def invoice_ocr(request: OcrRequest):
 
 @router.post("/passbook")
 async def passbook_ocr(request: OcrRequest):
-    """
-    Queries the documentation database using vector search.
-    The endpoint receives a query (and optionally a collection_name),
-    generates its embedding, performs a vector search, and returns the final answer.
-    """
-    invoice_service = OcrService()
+
+    invoice_service = OcrService(ocr_type="passbook")
     
     try:
-        # print(request.base64_string,flush=True)
-        # print(type(request.base64_string),flush=True)
-        final_response = invoice_service.process_ocr(request.base64_string, ocr_type="passbook")
+        final_response = invoice_service.process_ocr(request.base64_string)
         
         if not final_response:
             raise HTTPException(status_code=404, detail="No relevant documents found.")
@@ -54,17 +42,11 @@ async def passbook_ocr(request: OcrRequest):
     
 @router.post("/electricity-bill")
 async def electricity_bill_ocr(request: OcrRequest):
-    """
-    Queries the documentation database using vector search.
-    The endpoint receives a query (and optionally a collection_name),
-    generates its embedding, performs a vector search, and returns the final answer.
-    """
-    invoice_service = OcrService()
+
+    invoice_service = OcrService(ocr_type="electricity_bill")
     
     try:
-        # print(request.base64_string,flush=True)
-        # print(type(request.base64_string),flush=True)
-        final_response = invoice_service.process_ocr(request.base64_string, ocr_type="electricity_bill")
+        final_response = invoice_service.process_ocr(request.base64_string)
         
         if not final_response:
             raise HTTPException(status_code=404, detail="No relevant documents found.")
