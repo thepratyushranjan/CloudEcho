@@ -1,5 +1,5 @@
 import pandas as pd
-# from config.config import Config
+from config.config import Config
 from sqlalchemy import create_engine, Column, Integer, String, Float, Enum
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -27,8 +27,7 @@ class CloudComparison(Base):
         nullable=False
     )
 
-POSTGRES_CONNECTION = "postgresql+psycopg://postgres:postgres@localhost:5432/app"
-engine = create_engine(POSTGRES_CONNECTION)
+engine = create_engine(Config.POSTGRES_CONNECTION)
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 session = Session()

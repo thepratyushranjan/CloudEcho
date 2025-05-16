@@ -1,6 +1,7 @@
 import uuid
 import re
 from sqlalchemy import create_engine, Column, String, ForeignKey, JSON
+from config.config import Config
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import sessionmaker, declarative_base
 from pgvector.sqlalchemy import Vector
@@ -24,11 +25,10 @@ class LangchainPgEmbedding(Base):
     document = Column(String, nullable=False)
     cmetadata = Column(JSONB, nullable=True)
 
-POSTGRES_CONNECTION = "postgresql+psycopg://postgres:postgres@localhost:5432/app"
-engine = create_engine(POSTGRES_CONNECTION)
+engine = create_engine(Config.POSTGRES_CONNECTION)
 SessionLocal = sessionmaker(bind=engine)
 
-GEMINI_API_KEY = "AIzaSyAker6F4E8-U6drPx76tC8gFHv1dU9I2Ww"
+GEMINI_API_KEY = Config.GEMINI_API_KEY
 
 embedding_model = genai.GenerativeModel("models/embedding-001")
 embedding_model_name = "models/embedding-001"
