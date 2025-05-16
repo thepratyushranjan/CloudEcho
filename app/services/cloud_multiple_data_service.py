@@ -1,68 +1,72 @@
+# -*- coding: utf-8 -*-
+
+import math
 import traceback
 from typing import List, Optional
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine, or_
-from db.models.models import CloudComparison
-from fastapi import HTTPException
-from orm.cloud_response import CloudResponse
-from config.config import Config
 
-# Setup database engine and session
-DATABASE_URL = Config.POSTGRES_CONNECTION
-engine = create_engine(DATABASE_URL, echo=True)
+from fastapi import HTTPException
+from sqlalchemy import create_engine, or_
+from sqlalchemy.orm import sessionmaker
+
+from config.config import Config
+from utils.location_mapping import expand_common_locations
+from db.models.models import CloudComparison
+from orm.cloud_response import CloudResponse
+
+engine = create_engine(Config().POSTGRES_CONNECTION, echo=False)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 class CloudMultipleDataService:
     def get_filtered_cloud_comparisons_multiple(
-        self, 
-        location: Optional[List[str]], 
-        clouds: Optional[List[str]], 
-        instance_families: Optional[List[str]],
-    ) -> List[CloudResponse]:
+        self,
+        location: Optional[List[str]]         = None,
+        clouds:   Optional[List[str]]         = None,
+        instance_families: Optional[List[str]] = None
+    ) -> List[dict]:
         session = SessionLocal()
         try:
             query = session.query(CloudComparison)
-            
-            if location:
-                # Use 'ilike' for case-insensitive partial matching on location
-                location_filters = [
-                    CloudComparison.location.ilike(f"%{loc}%") for loc in location
-                ]
-                query = query.filter(or_(*location_filters))
-                
+
             if clouds:
                 query = query.filter(CloudComparison.cloud.in_(clouds))
+
+            if location:
+                expanded = expand_common_locations(location, clouds)
+                loc_conds = [
+                    CloudComparison.location.ilike(f"%{loc}%")
+                    for loc in expanded
+                ]
+                if loc_conds:
+                    query = query.filter(or_(*loc_conds))
+
             if instance_families:
-                query = query.filter(CloudComparison.instance_family.in_(instance_families))
+                query = query.filter(
+                    CloudComparison.instance_family.in_(instance_families)
+                )
 
-            filtered_results = query.all()
-            
-            if not filtered_results:
-                raise HTTPException(status_code=404, detail="No matching cloud instances found.")
-        
-            response_list = []
-            for result in filtered_results:
-                try:
-                    result_dict = result.__dict__.copy()
-                    if '_sa_instance_state' in result_dict:
-                        del result_dict['_sa_instance_state']
+            rows = query.all()
+            response_dicts: List[dict] = []
 
-                    if 'cost_per_hour' in result_dict and (
-                        isinstance(result_dict['cost_per_hour'], float) and 
-                        result_dict['cost_per_hour'] != result_dict['cost_per_hour']
-                    ):
-                        result_dict['cost_per_hour'] = None
-                        
-                    response_list.append(CloudResponse.model_validate(result_dict))
-                except Exception as model_error:
-                    print(f"Error converting model: {str(model_error)}, Data: {result.__dict__}")
-                    continue
-            
-            return response_list
+            for row in rows:
+                # 1) turn ORM object into a clean dict
+                d = row.__dict__.copy()
+                d.pop("_sa_instance_state", None)
+
+                # 2) guard against NaN cost_per_hour
+                cp = d.get("cost_per_hour")
+                if isinstance(cp, float) and math.isnan(cp):
+                    d["cost_per_hour"] = None
+
+                # 3) validate & coerce via Pydantic
+                cr = CloudResponse.model_validate(d)
+
+                # 4) dump back to plain dict
+                response_dicts.append(cr.model_dump())
+
+            return response_dicts
 
         except Exception as e:
-            error_details = traceback.format_exc()
-            print(f"Error in filtering cloud comparisons: {error_details}")
-            raise HTTPException(status_code=500, detail=f"Error in filtering cloud comparisons: {str(e)}")
+            traceback.print_exc()
+            raise HTTPException(status_code=500, detail=str(e))
         finally:
             session.close()
