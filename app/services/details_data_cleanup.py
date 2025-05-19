@@ -1,3 +1,7 @@
+from datetime import datetime, UTC
+from typing import Dict, Any
+
+# Source data Structure Format 
 def transform_data(data: dict) -> dict:
     """
     Transforms a raw cloud resource JSON into the simplified schema.
@@ -58,3 +62,37 @@ def transform_data(data: dict) -> dict:
             }
 
     return output
+
+# Monitoring data Structure Format
+def structure_metrics(raw: Dict[str, Any]) -> Dict[str, Any]:
+   
+    # Build lookup tables
+    cpu_map    = {d["date"]: d["value"] for d in raw["cpu"]}
+    in_map     = {d["date"]: d["value"] for d in raw["network_in_io"]}
+    out_map    = {d["date"]: d["value"] for d in raw["network_out_io"]}
+    
+    # Assemble unified list
+    metrics = []
+    for ts in sorted(cpu_map):
+        metrics.append({
+            "timestamp": datetime.fromtimestamp(ts, UTC).isoformat() + "Z",
+            "cpu":           cpu_map[ts],
+            "network_in_io": in_map[ts],
+            "network_out_io": out_map[ts],
+        })
+    
+    return {"metrics": metrics}
+
+
+def structured_data (content: Dict[str, Any], monitoring: Dict[str, Any]):
+    items = list(content.items())
+    idx = next(
+        i for i, (k, _) in enumerate(items)
+        if k == "applied_rules"
+    )
+    items.insert(
+        idx + 1,
+        ("metrics", monitoring["metrics"])
+    )
+
+    return dict(items)

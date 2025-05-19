@@ -6,3 +6,4 @@ from typing import Any, Dict
 class DetailsAnalysisRequest(BaseModel):
     query: str
     request: Dict[str, Any]
+    monitoring: Dict[str, Any]
