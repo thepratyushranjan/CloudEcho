@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "8069:8069"
     environment:
       - POSTGRES_CONNECTION=postgresql+psycopg://postgres:postgres@host.docker.internal:5432/app
       - GEMINI_API_KEY=AIzaSyAker6F4E8-U6drPx76tC8gFHv1dU9I2Ww
