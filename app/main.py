@@ -7,8 +7,10 @@ from api import(
     details_analysis, 
     checklist_analysis, 
     ocr,
-    cloud_comparison,
-    cloud_comparison_multiple,
+    cloud_comparison_api,
+    cloud_comparison_multiple_api,
+    recommendations_api,
+    resource_api,
 )
 from db.models.migrator import migrate_all
 from fastapi.middleware.cors import CORSMiddleware
@@ -41,14 +43,21 @@ chat_agent_router.include_router(details_analysis.router, tags=["Details Analysi
 chat_agent_router.include_router(checklist_analysis.router, tags=["Checklist Analysis"])
 
 # Include the cloud comparison routes
-chat_agent_router.include_router(cloud_comparison.router, tags=["Cloud Comparison"])
-chat_agent_router.include_router(cloud_comparison_multiple.router, tags=["Cloud Comparison Multiple"])
+chat_agent_router.include_router(cloud_comparison_api.router, tags=["Cloud Comparison"])
+chat_agent_router.include_router(cloud_comparison_multiple_api.router, tags=["Cloud Comparison Multiple"])
+
+# Include the cloudtuner routes
+# Include the cloudtuner routes
+chat_agent_router.include_router(recommendations_api.router, tags=["Recommendations"])
+chat_agent_router.include_router(resource_api.router, tags=["Resource Data"])
 
 # Include the grouped router in the main app
 app.include_router(chat_agent_router)
 
 # Add endpoints /invoice-ocr
 app.include_router(ocr.router, tags=["OCR"], prefix="/ocr")
+
+
 @app.get("/")
 async def root(request: Request):
     """
