@@ -55,7 +55,7 @@ If no items match, output:
 > No items found for this category.
 
 ## Actionable Insight  
-- Provide 2–3 concrete, prioritized next steps.
+- Provide 8–10 concrete, prioritized next steps.
 - Quantify benefits or savings (e.g., “Could save ~\$1,200/mo”).
 - If dependencies exist, call them out.
 

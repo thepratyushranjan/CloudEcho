@@ -32,7 +32,7 @@ class ChecklistLlmGenerator:
         return self.generate_query_response(final_data)
 
 
-def read_system_instruction(file_path: str = "tests/prompt_1.txt") -> str:
+def read_system_instruction(file_path: str = "prompt/AI_Checklist_Prompt.txt") -> str:
     file_path = os.path.abspath(file_path)
     try:
         with open(file_path, "r") as file:

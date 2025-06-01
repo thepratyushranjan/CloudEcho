@@ -3,14 +3,15 @@
 from httpx import AsyncClient, HTTPStatusError
 from fastapi import HTTPException
 
-from config.config import Config
+# from config.config import Config
+
+CLOUDTUNER_API_URL = "https://dashboard.cloudtuner.ai/restapi/v2"
+BASE_CLOUDTUNER_URL = CLOUDTUNER_API_URL.rstrip("/")
 
 
 class CloudTunerServiceRecommendations:
     def __init__(self, client: AsyncClient, org_id: str, api_token: str):
-        cfg = Config()
-        base = cfg.CLOUDTUNER_API_URL.rstrip("/")
-        self.url = f"{base}/organizations/{org_id}/optimizations"
+        self.url = f"{BASE_CLOUDTUNER_URL}/organizations/{org_id}/optimizations"
         self.client = client
         self.headers = {"Authorization": f"Bearer {api_token}"}
 
@@ -30,8 +31,7 @@ class CloudTunerServiceRecommendations:
 
 class CloudTunerServiceResource:
     def __init__(self, client: AsyncClient, api_token: str):
-        cfg = Config()
-        self.base_url = cfg.CLOUDTUNER_API_URL.rstrip("/")
+        self.base_url = BASE_CLOUDTUNER_URL
         self.client   = client
         self.headers  = {"Authorization": f"Bearer {api_token}"}
 

@@ -45,7 +45,7 @@ class LlmGenerator:
         return self.generate_query_response(combined_prompt)
 
 
-def read_system_instruction(file_path: str = "tests/prompt.txt") -> str:
+def read_system_instruction(file_path: str = "prompt/Chat_Bot_prompt.txt") -> str:
     file_path = os.path.abspath(file_path)
     try:
         with open(file_path, "r") as file:

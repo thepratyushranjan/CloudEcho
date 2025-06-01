@@ -32,7 +32,7 @@ class DetailsLlmGenerator:
         return self.generate_query_response(final_data)
 
 
-def read_system_instruction(file_path: str = "tests/_prompt.txt") -> str:
+def read_system_instruction(file_path: str = "prompt/AI_Recommendations_Prompt.txt") -> str:
     file_path = os.path.abspath(file_path)
     try:
         with open(file_path, "r") as file:
