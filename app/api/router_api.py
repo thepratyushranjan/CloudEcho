@@ -10,7 +10,7 @@ from app.utils.details_data_cleanup import (
     structure_metrics,
     structured_data,
 )
-from services.cloud_comparison_service import CloudComparisonService, CloudMultipleDataService
+from services.cloud_comparison_service import CloudComparisonService, CloudMultipleDataService, CloudComparisonFilterService
 from services.cloudtuner_services import CloudTunerServiceRecommendations, CloudTunerServiceResource
 from services.chat_agent_query_service import QueryService, SimpleQueryService
 from services.document_service import DocumentService
@@ -21,6 +21,7 @@ from models.pydentic_model import (
     CloudComparisonQueryRequest,
     CloudComparisonQueryMultipleRequest,
     CloudMultipleDataResponse,
+    CloudComparisonFilterRequest,
     DetailsAnalysisRequest,
     DocumentRequest,
     RecommendationRequest,
@@ -198,6 +199,8 @@ async def cloud_comparison_multiple(request: CloudComparisonQueryMultipleRequest
             location=request.location, 
             clouds=request.clouds, 
             instance_families=request.instance_families,
+            regions=request.regions,
+            instance_type=request.instance_type
         )
         
         return CloudMultipleDataResponse(cloud_multiple_data=filtered_results)
@@ -208,8 +211,32 @@ async def cloud_comparison_multiple(request: CloudComparisonQueryMultipleRequest
         error_details = traceback.format_exc()
         print(f"Unexpected error in cloud_comparison_multiple: {error_details}")
         raise HTTPException(status_code=400, detail=f"An error occurred: {str(e)}")
+
+@router.post("/cloud-comparison/cloud-provider/filter", response_model=CloudMultipleDataResponse)
+async def cloud_comparison_filter(request: CloudComparisonFilterRequest):
+    cloud_comparison_filter_service = CloudComparisonFilterService()
     
-# AI Recommndations API Endpoints
+    try:
+        filtered_results = cloud_comparison_filter_service.get_filtered_by_specs(
+            vcpus=request.vcpus,
+            ram_gib=request.ram_gib,
+            memory_mib=request.memory_mib,
+            cost_per_hour=request.cost_per_hour,
+            instance_families=request.instance_families,
+            location=request.location,
+
+        )
+        
+        return CloudMultipleDataResponse(cloud_multiple_data=filtered_results)
+    
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        error_details = traceback.format_exc()
+        print(f"Unexpected error in cloud_comparison_filter: {error_details}")
+        raise HTTPException(status_code=400, detail=f"An error occurred: {str(e)}")
+
+        # AI Recommndations API Endpoints
 @router.post("/recommendations", response_model=dict)
 async def get_recommendations(
     req: RecommendationRequest,

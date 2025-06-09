@@ -125,8 +125,6 @@ COMMON_LOCATION_MAP = {
     "Azure": [
       "AP East",
       "AP Southeast",
-      "AU Central",
-      "AU Central 2",
       "AU East",
       "AU Southeast",
       "ID Central",

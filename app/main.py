@@ -37,7 +37,8 @@ chat_agent_router.include_router(
         "Cloud Comparison",
         "Cloud Comparison Multiple",
         "Recommendations",
-        "Resource Data"
+        "Resource Data",
+        "Cloud Comparison Filter"
     ]
 )
 

@@ -66,7 +66,22 @@ class CloudComparisonQueryMultipleRequest(BaseModel):
     location: Optional[List[str]] = None
     clouds: Optional[List[str]] = None
     instance_families: Optional[List[str]] = None
+    regions: Optional[List[str]] = None
+    instance_type: Optional[List[str]] = None
 
+
+# This code defines a Pydantic model for a cloud comparison filter request.
+class CloudComparisonFilterRequest(BaseModel):
+    """
+    Filter criteria for cloud‐instance specs.
+    Numeric fields will be used as upper bounds (<=).
+    """
+    vcpus: Optional[List[int]]               = None
+    ram_gib: Optional[List[float]]           = None
+    memory_mib: Optional[List[int]]          = None
+    cost_per_hour: Optional[List[float]]     = None
+    instance_families: Optional[List[str]] = None
+    location: Optional[List[str]] = None
 class CloudMultipleDataResponse(BaseModel):
     cloud_multiple_data: List[CloudResponse]
 
@@ -83,3 +98,4 @@ class ResourceRequest(BaseModel):
     resource_id: str
     api_token:   str
     details:     bool = True
+
