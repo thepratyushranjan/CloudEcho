@@ -81,7 +81,7 @@ class CloudComparisonFilterRequest(BaseModel):
     memory_mib: Optional[List[int]]          = None
     cost_per_hour: Optional[List[float]]     = None
     instance_families: Optional[List[str]] = None
-    location: Optional[List[str]] = None
+    country: Optional[List[str]] = None
 class CloudMultipleDataResponse(BaseModel):
     cloud_multiple_data: List[CloudResponse]
 

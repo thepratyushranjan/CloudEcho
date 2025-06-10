@@ -152,7 +152,7 @@ class CloudComparisonFilterService:
         memory_mib: Optional[List[int]]          = None,
         cost_per_hour: Optional[List[float]]     = None,
         instance_families: Optional[List[str]]   = None,
-        location: Optional[List[str]] = None,
+        country: Optional[List[str]] = None,
     ) -> List[dict]:
         session = SessionLocal()
         try:
@@ -175,9 +175,8 @@ class CloudComparisonFilterService:
                 max_cost = max(cost_per_hour)
                 query = query.filter(CloudComparison.cost_per_hour <= max_cost)
 
-            if location:
-                print(f"Filtering by location: {location}")
-                expanded = expand_common_locations(location, clouds=None)
+            if country is not None:
+                expanded = expand_common_locations(country, clouds=[])
                 loc_conds = [
                     CloudComparison.location.ilike(f"%{loc}%")
                     for loc in expanded

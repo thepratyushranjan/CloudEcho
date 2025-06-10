@@ -9,6 +9,9 @@ from app.utils.details_data_cleanup import (
     transform_data,
     structure_metrics,
     structured_data,
+    extract_basic_info,
+    get_cloud_comparison,
+    get_cloud_comparison_filter,
 )
 from services.cloud_comparison_service import CloudComparisonService, CloudMultipleDataService, CloudComparisonFilterService
 from services.cloudtuner_services import CloudTunerServiceRecommendations, CloudTunerServiceResource
@@ -136,14 +139,13 @@ async def details_analysis(payload: DetailsAnalysisRequest):
         sources = payload.request
         query = payload.query
         monitoring = payload.monitoring
-
-        # Structure the monitoring metrics
         transform_monitoring = structure_metrics(monitoring)
-        # Clean up and transform the source data
         transform_sources = transform_data(sources)
-        # Combine sources + metrics into one payload
         content = structured_data(transform_sources, transform_monitoring)
-
+        basic_info = extract_basic_info(sources)
+        comparison = get_cloud_comparison(basic_info)
+        filtered = get_cloud_comparison_filter(comparison)
+        print(f"Filtered cloud comparison: {filtered}")
         data = {
             "content": content,
             "question": query,
@@ -151,9 +153,9 @@ async def details_analysis(payload: DetailsAnalysisRequest):
         final_data = json.dumps(data, indent=2)
 
         # Invoke the details-specific LLM generator
-        details_llm_generator = DetailsLlmGenerator()
-        response = details_llm_generator.llm_query(final_data)
-        return {"response": response}
+        # details_llm_generator = DetailsLlmGenerator()
+        # response = details_llm_generator.llm_query(final_data)
+        return {"response": final_data}
 
     except Exception as e:
         raise HTTPException(
@@ -223,7 +225,7 @@ async def cloud_comparison_filter(request: CloudComparisonFilterRequest):
             memory_mib=request.memory_mib,
             cost_per_hour=request.cost_per_hour,
             instance_families=request.instance_families,
-            location=request.location,
+            country=request.country,
 
         )
         
