@@ -39,10 +39,10 @@ Valid block types:
 { "type": "heading", "title": "Cost Controls" },
 { "type": "text", "content": "Actions to monitor and manage resource spend." },
 { "type": "checklist", "items": [
-{ "label": "Review current monthly spend of $<value> against allocated budget.", "checked": false },
-{ "label": "Analyze month-to-date costs of $<value> for unexpected spikes.", "checked": false },
-{ "label": "Validate budget threshold of $<value> and adjust for next period.", "checked": false },
-{ "label": "Investigate cost anomalies totaling $<value> identified this period.", "checked": false }
+  { "label": "Review current month spend of $<value> and compare against budget.", "checked": false },
+  { "label": "Assess month-to-date spend of $<value> for unexpected spikes.", "checked": false },
+  { "label": "Validate budget threshold of $<value> and adjust if necessary.", "checked": false },
+  { "label": "Investigate cost anomalies totaling $<value>.", "checked": false }
 ] }
 ```
 
@@ -90,33 +90,29 @@ Valid block types:
 **7. Idle Shutdown Windows** (If data exists)
 ```json
 // Example: Make this section collapsible due to potentially many windows
-{ "type": "heading", "title": "Idle Shutdown Windows", "collapsible": true },
-// Modified text content to include total savings for the module
 {
-"type": "text",
-"content": "Configure instance/Automated shutdown schedules to reduce costs during inactive periods. Implementing all suggested windows for this module could save approximately $<total_module_savings>/month."
-// Note: <total_module_savings> would come from the 'saving' field within the 'instances_for_shutdown' object (or similar module name).
+  "type": "heading",
+  "title": "Idle Shutdown Windows",
+  "collapsible": true
 },
 {
-"type": "checklist",
-"items": [
-// For each 'inactivity_period' object:
-// - 'start_day_name' is the full name of the day for start.day_of_week (0=Sunday, 1=Monday, ..., 6=Saturday).
-// - 'start_time_ampm' is start.hour formatted as H:00 AM/PM (e.g., 0 -> "12:00 AM", 3 -> "3:00 AM", 12 -> "12:00 PM", 15 -> "3:00 PM").
-// - If hour is 0 (midnight), format as "12:00 AM".
-// - If hour is 1-11, format as "<hour>:00 AM".
-// - If hour is 12 (noon), format as "12:00 PM".
-// - If hour is 13-23, format as "<hour-12>:00 PM".
-// - 'end_day_name' is the full name of the day for end.day_of_week.
-// - 'end_time_ampm' is end.hour formatted similarly as H:00 AM/PM.
+  "type": "text",
+  "content": "Schedule automatic shutdowns during periods when the instance is idle to save approximately $<total_module_savings>/month."
+},
 {
-"label": "Configure instance/Schedule automatic to shutdown from <start_day_name> <start_time_ampm> to <end_day_name> <end_time_ampm>.",
-"checked": false
-}
-// ... more windows
-]
+  "type": "info",
+  "items": [
+    // For each day with inactivity_periods, create a row in a two-column table:
+    //   "Day" → "<Day>"
+    //   "Windows" → "<HH:MM AM | PM> - <HH:MM AM | PM> (<Xh>) [ | <HH:MM AM | PM> - <HH:MM AM | PM> (<Yh>) ...]"
+    // Example items:
+    { "label": "Sunday", "value": "12:00 AM - 3:00 AM (3h) | 5:00 AM - 9:00 AM (4h) | 11:00 AM - 12:00 PM (1h) | 1:00 PM - 11:59 PM (11h)" },
+    { "label": "Monday", "value": "12:00 AM - 6:00 AM (6h) | 8:00 AM - 10:00 AM (2h)" }
+    // ... one item per day with its combined windows
+  ]
 }
 ```
+
 
 **8. Automation Tasks** (If data exists)
 ```json
@@ -141,24 +137,39 @@ Valid block types:
 **10. Metadata & Tags**
 ```json
 // Example: Make this section collapsible due to potentially many tags
-{ "type": "heading", "title": "Metadata & Tags", "collapsible": true },
-{ "type": "text", "content": "Contextual metadata and review tags for accuracy." },
-{ "type": "info", "items": [ // Metadata block
-{ "label": "<key>", "value": "<value>" }, // e.g., flavor, vpc_id, etc.
-// ... more metadata items
-] },
-{ "type": "checklist", "items": [ // Tags block
-{ "label": "Review tag <key>: <value> for accuracy.", "checked": false }
-// ... more tag items
-] }
+{ 
+  "type": "heading", 
+  "title": "Metadata & Tags", 
+  "collapsible": true 
+},
+{ 
+  "type": "text", 
+  "content": "Contextual metadata and review tags for accuracy." 
+},
+// For Metadata items, present them in a tabular format with columns "Key" and "Value"
+{ 
+  "type": "info", 
+  "items": [
+    { "label": "<key>", "value": "<value>" }, // e.g., flavor, vpc_id, etc.
+    // ... more metadata items
+  ] 
+},
+// For Tags, present them in a tabular format with columns "Key" and "Value"
+{ 
+  "type": "checklist", 
+  "items": [
+    { "label": "Review tag <key>: <value> for accuracy.", "checked": false }
+    // ... more tag items
+  ] 
+}
 ```
 
 --- GLOBAL RULES ---
 - Block `type` must be one of: `"heading"`, `"text"`, `"info"`, or `"checklist"`.
 - **Heading**: section title. Can optionally include `"collapsible": true`.
 - **Text**: subtitle providing context. Must follow a `heading`.
-- **Info**: static details (key/value pairs).
-- **Checklist**: actionable, descriptive steps. `"checked"` must always be `false`.
+- **Info**: static details (key/value pairs). For Metadata, these will be rendered as a table with columns "Key" and "Value".
+- **Checklist**: actionable, descriptive steps. "checked" must always be false. For Tags, these items will also be displayed in a tabular format with columns "Key" and "Value."
 - Timestamps in `value` fields (like `first_seen`, `last_seen` if included) should be ISO-8601 UTC format (e.g. `"2025-04-24T05:56:31Z"`).
 - Output **only** the valid JSON array representing the blocks—no extra text, explanations, or markdown wrapping like ```json.
 ```

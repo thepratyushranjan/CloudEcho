@@ -12,6 +12,7 @@ from app.utils.details_data_cleanup import (
     extract_basic_info,
     get_cloud_comparison,
     get_cloud_comparison_filter,
+    structured_data_with_cloud_migration,
 )
 from services.cloud_comparison_service import CloudComparisonService, CloudMultipleDataService, CloudComparisonFilterService
 from services.cloudtuner_services import CloudTunerServiceRecommendations, CloudTunerServiceResource
@@ -144,18 +145,26 @@ async def details_analysis(payload: DetailsAnalysisRequest):
         content = structured_data(transform_sources, transform_monitoring)
         basic_info = extract_basic_info(sources)
         comparison = get_cloud_comparison(basic_info)
-        filtered = get_cloud_comparison_filter(comparison)
-        print(f"Filtered cloud comparison: {filtered}")
+        filtered = get_cloud_comparison_filter(comparison, basic_info)
+        migration_content = structured_data_with_cloud_migration(transform_sources, transform_monitoring, filtered)
+        details_llm_generator = DetailsLlmGenerator()
+        if query == "Cross‑Cloud Migration":
+            migration_data = {
+                "content": migration_content,
+                "question": query,
+            }
+            final_migration_data = json.dumps(migration_data, indent=2)
+            response = details_llm_generator.migration_query(final_migration_data)
+            return {"response": response}
+            
+
         data = {
             "content": content,
             "question": query,
         }
         final_data = json.dumps(data, indent=2)
-
-        # Invoke the details-specific LLM generator
-        # details_llm_generator = DetailsLlmGenerator()
-        # response = details_llm_generator.llm_query(final_data)
-        return {"response": final_data}
+        response = details_llm_generator.llm_query(final_data)
+        return {"response": response}
 
     except Exception as e:
         raise HTTPException(

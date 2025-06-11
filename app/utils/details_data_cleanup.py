@@ -1,6 +1,6 @@
 import requests 
 from datetime import datetime, UTC
-from typing import Dict, Any
+from typing import Dict, Any, List, Tuple
 from utils.location_mapping import get_country_from_aws_region_code
 from services.cloud_comparison_service import CloudComparisonFilterService, CloudMultipleDataService
 from models.pydentic_model import CloudMultipleDataResponse
@@ -132,7 +132,9 @@ def get_cloud_comparison(basic_info):
     
 
 
-def get_cloud_comparison_filter(comparison):
+def get_cloud_comparison_filter(comparison, basic_info):
+    region = basic_info.get("region")
+    country = get_country_from_aws_region_code(region) if region else None
     if not comparison or not isinstance(comparison, dict):
         return None
         
@@ -153,10 +155,25 @@ def get_cloud_comparison_filter(comparison):
             memory_mib=memory_mib,
             cost_per_hour=cost_per_hour,
             instance_families=instance_families,
-            country=['India'],
+            country=country,
 
         )
     
     results = CloudMultipleDataResponse(cloud_multiple_data=filtered_results)
     return results.dict()
     
+
+def structured_data_with_cloud_migration(
+    content: Dict[str, Any],
+    monitoring: Dict[str, Any],
+    filtered: Dict[str, Any]
+) -> Dict[str, Any]:
+    items: List[Tuple[str, Any]] = list(content.items())
+
+    idx = next(
+        i for i, (k, _) in enumerate(items)
+        if k == "applied_rules"
+    )
+    items.insert(idx + 1, ("metrics", monitoring["metrics"]))
+    items.insert(idx + 2, ("comparison", filtered))
+    return dict(items)
