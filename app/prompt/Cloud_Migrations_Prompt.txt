@@ -10,10 +10,10 @@ When given a JSON context object describing a single cloud resource and asking *
 * **Name**: `content.name`
 * **Current Cloud**: AWS, Region: `content.region`
 * **Current Instance**: `content.meta.flavor` (X vCPUs, Y GiB RAM)
-* **Total Expense**: `$total_cost`
-* **Hourly Cost**: $Z.ZZZZ
-* **Forecast This Month**: `$details.cost` 
-* **Last Expense**: `$last_expense.cost` (Use last_expense.cost from the JSON data)
+* **Current Expense This Month**: `$details.cost` (formatted to 3 decimal places)
+* **Hourly Cost**: $Z.ZZZ (formatted to 3 decimal places)
+* **Forecast This Month**: `$details.forecast` (formatted to 3 decimal places)
+* **Last Expense**: `$last_expense.cost` (Use last_expense.cost from the JSON data, formatted to 3 decimal places)
 * **Last Expense Date**: `last_expense.date` (Date Should be mm/dd/yyyy Format)
 
 Briefly summarize the migration objective and criteria used for selecting alternatives.
@@ -36,27 +36,27 @@ Briefly summarize the migration objective and criteria used for selecting altern
 3. **Migration & Rightsizing Candidates by Cloud Provider**
 
 * **AWS Migration Candidates**
-*(Display this table only when AWS data is available in content)*
+*(Display this table only when AWS data is available in content. If AWS data is not available, show: "AWS data is not available")*
 
 | Instance Type | vCPUs | RAM (GiB) | Region | Location | Hourly Cost | Est. Monthly Savings | Rationale |
 | ------------- | ----- | --------- | ------ | -------- | ----------- | -------------------- | --------- |
-| ...           | ...   | ...       | ...    | ...      | ...         | \~\$XX.XX            | ...       |
+| ...           | ...   | ...       | ...    | ...      | $X.XXX      | ~$XX.XXX             | ...       |
 
 * **GCP Migration Candidates**
-*(Display this table only when GCP data is available in content)*
+*(Display this table only when GCP data is available in content. If GCP data is not available, show: "GCP data is not available")*
 
 | Instance Type | vCPUs | RAM (GiB) | Region | Location | Hourly Cost | Est. Monthly Savings | Rationale |
 | ------------- | ----- | --------- | ------ | -------- | ----------- | -------------------- | --------- |
-| ...           | ...   | ...       | ...    | ...      | ...         | \~\$XX.XX            | ...       |
+| ...           | ...   | ...       | ...    | ...      | $X.XXX      | ~$XX.XXX             | ...       |
 
 * **Azure Migration Candidates**
-*(Display this table only when Azure data is available in content)*
+*(Display this table only when Azure data is available in content. If Azure data is not available, show: "Azure data is not available")*
 
 | Instance Type | vCPUs | RAM (GiB) | Region | Location | Hourly Cost | Est. Monthly Savings | Rationale |
 | ------------- | ----- | --------- | ------ | -------- | ----------- | -------------------- | --------- |
-| ...           | ...   | ...       | ...    | ...      | ...         | \~\$XX.XX            | ...       |
+| ...           | ...   | ...       | ...    | ...      | $X.XXX      | ~$XX.XXX             | ...       |
 
-* **Monthly Savings** = (Current Hourly Cost - Candidate Hourly Cost) × 730
+* **Monthly Savings** = (Current Hourly Cost - Candidate Hourly Cost) × 730 (all cost calculations formatted to 3 decimal places)
 
 ---
 
@@ -77,12 +77,13 @@ Generate 8-10 numbered, prioritized steps focused exclusively on cross-cloud mig
 
 ## 4. Executive Rationale
 
-Compose a compelling paragraph that explains: current risks (security, over‑provisioning), cost‑savings opportunity, and the strategic path (immediate fixes plus a structured PoC). Highlight business impact: percentage reduction in costs, annual savings figure, and alignment with modernization goals.
+Compose a compelling paragraph that explains: current risks (security, over‑provisioning), cost‑savings opportunity, and the strategic path (immediate fixes plus a structured PoC). Highlight business impact: percentage reduction in costs, annual savings figure (formatted to 3 decimal places), and alignment with modernization goals.
 
 ## Detailed Rationale  
 - Summarize the **underlying reasoning** in one paragraph.
 - Reference best practices, compliance standards, or benchmarks.
 - Point to any trade-offs or risks.
+- All cost figures should be formatted to 3 decimal places.
 
 ---
 
@@ -92,3 +93,4 @@ Compose a compelling paragraph that explains: current risks (security, over‑pr
 - Use **clear sub-headings** and **short paragraphs**.  
 - Include examples or mini-scenarios when relevant.  
 - Omit any extra commentary outside these four sections.
+- **Important**: All monetary values must be formatted to exactly 3 decimal places (e.g., $123.102, $45.678, $0.001).
