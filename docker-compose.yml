@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  chatbot-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8069:8069"
+    environment:
+      - POSTGRES_CONNECTION=postgresql+psycopg://postgres:postgres@host.docker.internal:5432/app
+      - GEMINI_API_KEY="your-gemini-api-key"
+      - LOGGING_LEVEL=DEBUG
+    volumes:
+      - ./app:/app/app
+    restart: unless-stopped
