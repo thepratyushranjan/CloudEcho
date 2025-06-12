@@ -34,6 +34,7 @@ def transform_data(data: dict) -> dict:
         "pool_id": data.get("pool_id"),
         "details": {
             "pool_name": data.get("details", {}).get("pool_name"),
+            "cost": data.get("details", {}).get("cost"),
             "pool_purpose": data.get("details", {}).get("pool_purpose"),
             "forecast": data.get("details", {}).get("forecast"),
             "total_traffic_expenses": data.get("details", {}).get("total_traffic_expenses"),

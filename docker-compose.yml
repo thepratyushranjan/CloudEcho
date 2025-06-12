@@ -9,7 +9,7 @@ services:
       - "8069:8069"
     environment:
       - POSTGRES_CONNECTION=postgresql+psycopg://postgres:postgres@host.docker.internal:5432/app
-      - GEMINI_API_KEY=AIzaSyBKT6-nzJADAA3sTI7IuwMjjPtqIy5z4TY
+      - GEMINI_API_KEY="your-gemini-api-key"
       - LOGGING_LEVEL=DEBUG
     volumes:
       - ./app:/app/app
