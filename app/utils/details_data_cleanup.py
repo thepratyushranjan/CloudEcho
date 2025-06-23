@@ -111,12 +111,14 @@ def extract_basic_info(data: dict) -> dict:
         "resource_type":      data.get("resource_type"),
         "region":             data.get("region"),
         "flavor":             data.get("meta", {}).get("flavor"),
+        "os":             data.get("meta", {}).get("os"),
     }
 
 
 def get_cloud_comparison(basic_info):
     region = basic_info.get("region")
     flavor = basic_info.get("flavor")
+    os = basic_info.get("os")
 
     cloud_comparison_service = CloudMultipleDataService()
 
@@ -125,7 +127,8 @@ def get_cloud_comparison(basic_info):
             instance_families=[], 
             clouds=["AWS"], 
             regions=[region] if region else [],
-            instance_type=[flavor] if flavor else []
+            instance_type=[flavor] if flavor else [],
+            os=[os] if os else []
         )
     
     results = CloudMultipleDataResponse(cloud_multiple_data=filtered_results)
@@ -135,31 +138,29 @@ def get_cloud_comparison(basic_info):
 
 def get_cloud_comparison_filter(comparison, basic_info):
     region = basic_info.get("region")
-    country = get_country_from_aws_region_code(region) if region else None
+    os = basic_info.get("os")
+    os = [os] if os else []
+    country = [get_country_from_aws_region_code(region)] if region else []
     if not comparison or not isinstance(comparison, dict):
         return None
         
     data_list = comparison.get("cloud_multiple_data", [])  
     vcpus = list({item.get("vcpus") for item in data_list if item.get("vcpus") is not None})
-    ram_gib = list({item.get("ram_gib") for item in data_list if item.get("ram_gib") is not None})
-    memory_mib = list({item.get("memory_mib") for item in data_list if item.get("memory_mib") is not None})
+    memory_gb = list({item.get("memory_gb") for item in data_list if item.get("memory_gb") is not None})
     cost_per_hour = list({item.get("cost_per_hour") for item in data_list if item.get("cost_per_hour") is not None})
     instance_families = list({item.get("instance_family") 
                               for item in data_list 
                               if item.get("instance_family")})
-
     cloud_comparison_filter_service = CloudComparisonFilterService()
-
     filtered_results = cloud_comparison_filter_service.get_filtered_by_specs(
             vcpus=vcpus,
-            ram_gib=ram_gib,
-            memory_mib=memory_mib,
+            memory_gb=memory_gb,
             cost_per_hour=cost_per_hour,
             instance_families=instance_families,
             country=country,
-
+            os =os,
         )
-    
+        
     results = CloudMultipleDataResponse(cloud_multiple_data=filtered_results)
     return results.dict()
     

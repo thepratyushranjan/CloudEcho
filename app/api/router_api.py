@@ -185,8 +185,8 @@ async def cloud_comparison(request: CloudComparisonQueryRequest):
             location   = request.location,
             vcpus_min   = request.vcpus_min,
             vcpus_max   = request.vcpus_max,
-            ram_gib_min = request.ram_gib_min,
-            ram_gib_max = request.ram_gib_max,
+            memory_gb_min = request.memory_gb_min,
+            memory_gb_max = request.memory_gb_max,
         )
         
         return {"cloud_comparisons": filtered_results}
@@ -211,7 +211,8 @@ async def cloud_comparison_multiple(request: CloudComparisonQueryMultipleRequest
             clouds=request.clouds, 
             instance_families=request.instance_families,
             regions=request.regions,
-            instance_type=request.instance_type
+            instance_type=request.instance_type,
+            os=request.os
         )
         
         return CloudMultipleDataResponse(cloud_multiple_data=filtered_results)
@@ -230,11 +231,11 @@ async def cloud_comparison_filter(request: CloudComparisonFilterRequest):
     try:
         filtered_results = cloud_comparison_filter_service.get_filtered_by_specs(
             vcpus=request.vcpus,
-            ram_gib=request.ram_gib,
-            memory_mib=request.memory_mib,
+            memory_gb=request.memory_gb,
             cost_per_hour=request.cost_per_hour,
             instance_families=request.instance_families,
             country=request.country,
+            os =request.os,
 
         )
         

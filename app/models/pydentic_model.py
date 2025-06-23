@@ -49,8 +49,8 @@ class CloudComparisonQueryRequest(BaseModel):
     location: Optional[List[str]] = None
     vcpus_min: Optional[int]       = None
     vcpus_max: Optional[int]       = None
-    ram_gib_min: Optional[float]   = None
-    ram_gib_max: Optional[float]   = None
+    memory_gb_max: Optional[str]     = None
+    memory_gb_min: Optional[str]   = None
 
     @field_validator("location", mode="before")
     @classmethod
@@ -68,6 +68,7 @@ class CloudComparisonQueryMultipleRequest(BaseModel):
     instance_families: Optional[List[str]] = None
     regions: Optional[List[str]] = None
     instance_type: Optional[List[str]] = None
+    os: Optional[List[str]] = None
 
 
 # This code defines a Pydantic model for a cloud comparison filter request.
@@ -77,11 +78,11 @@ class CloudComparisonFilterRequest(BaseModel):
     Numeric fields will be used as upper bounds (<=).
     """
     vcpus: Optional[List[int]]               = None
-    ram_gib: Optional[List[float]]           = None
-    memory_mib: Optional[List[int]]          = None
+    memory_gb: Optional[List[str]]          = None
     cost_per_hour: Optional[List[float]]     = None
     instance_families: Optional[List[str]] = None
     country: Optional[List[str]] = None
+    os: Optional[List[str]] = None
 class CloudMultipleDataResponse(BaseModel):
     cloud_multiple_data: List[CloudResponse]
 

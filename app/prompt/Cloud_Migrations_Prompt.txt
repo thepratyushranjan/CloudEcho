@@ -38,21 +38,21 @@ Briefly summarize the migration objective and criteria used for selecting altern
 * **AWS Migration Candidates**
 *(Display this table only when AWS data is available in content. If AWS data is not available, show: "AWS data is not available")*
 
-| Instance Type | vCPUs | RAM (GiB) | Region | Location | Hourly Cost | Est. Monthly Savings | Rationale |
+| Instance Type | vCPUs | Memory (GiB) | Region | Location | Hourly Cost | Est. Monthly Savings | Rationale |
 | ------------- | ----- | --------- | ------ | -------- | ----------- | -------------------- | --------- |
 | ...           | ...   | ...       | ...    | ...      | $X.XXX      | ~$XX.XXX             | ...       |
 
 * **GCP Migration Candidates**
 *(Display this table only when GCP data is available in content. If GCP data is not available, show: "GCP data is not available")*
 
-| Instance Type | vCPUs | RAM (GiB) | Region | Location | Hourly Cost | Est. Monthly Savings | Rationale |
+| Instance Type | vCPUs | Memory (GiB) | Region | Location | Hourly Cost | Est. Monthly Savings | Rationale |
 | ------------- | ----- | --------- | ------ | -------- | ----------- | -------------------- | --------- |
 | ...           | ...   | ...       | ...    | ...      | $X.XXX      | ~$XX.XXX             | ...       |
 
 * **Azure Migration Candidates**
 *(Display this table only when Azure data is available in content. If Azure data is not available, show: "Azure data is not available")*
 
-| Instance Type | vCPUs | RAM (GiB) | Region | Location | Hourly Cost | Est. Monthly Savings | Rationale |
+| Instance Type | vCPUs | Memory (GiB) | Region | Location | Hourly Cost | Est. Monthly Savings | Rationale |
 | ------------- | ----- | --------- | ------ | -------- | ----------- | -------------------- | --------- |
 | ...           | ...   | ...       | ...    | ...      | $X.XXX      | ~$XX.XXX             | ...       |
 
