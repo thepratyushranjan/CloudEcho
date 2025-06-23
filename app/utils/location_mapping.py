@@ -117,7 +117,6 @@ COMMON_LOCATION_MAP = {
       "Hong Kong",
       "Jakarta",
       "Mumbai",
-      "Mumbai",
       "Sydney",
       "Seoul",
       "Osaka",

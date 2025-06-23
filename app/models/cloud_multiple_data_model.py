@@ -6,6 +6,8 @@ class CloudComparisonQueryMultipleRequest(BaseModel):
     location: Optional[List[str]] = None
     clouds: Optional[List[str]] = None
     instance_families: Optional[List[str]] = None
+    regions: Optional[List[str]] = None
+    instance_type: Optional[List[str]] = None
 
 class CloudMultipleDataResponse(BaseModel):
     cloud_multiple_data: List[CloudResponse]

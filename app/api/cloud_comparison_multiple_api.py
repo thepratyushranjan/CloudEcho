@@ -18,6 +18,8 @@ async def cloud_comparison_multiple(request: CloudComparisonQueryMultipleRequest
             location=request.location, 
             clouds=request.clouds, 
             instance_families=request.instance_families,
+            regions=request.regions,
+            instance_type=request.instance_type
         )
         
         return CloudMultipleDataResponse(cloud_multiple_data=filtered_results)

@@ -21,7 +21,9 @@ class CloudMultipleDataService:
         self,
         location: Optional[List[str]]         = None,
         clouds:   Optional[List[str]]         = None,
-        instance_families: Optional[List[str]] = None
+        instance_families: Optional[List[str]] = None,
+        regions: Optional[List[str]] = None,
+        instance_type: Optional[List[str]] = None
     ) -> List[dict]:
         session = SessionLocal()
         try:
@@ -43,6 +45,12 @@ class CloudMultipleDataService:
                 query = query.filter(
                     CloudComparison.instance_family.in_(instance_families)
                 )
+
+            if regions:
+                query = query.filter(CloudComparison.region.in_(regions))
+
+            if instance_type:
+                query = query.filter(CloudComparison.instance_type.in_(instance_type))
 
             rows = query.all()
             response_dicts: List[dict] = []

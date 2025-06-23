@@ -19,15 +19,21 @@ class CloudComparison(Base):
     instance_type = Column(String, nullable=False)
     instance_family = Column(String, nullable=False)
     vcpus = Column(Integer, nullable=False)
-    ram_gib = Column(Float, nullable=False)
-    memory_mib = Column(Integer, nullable=False)
+    memory_gb = Column(String, nullable=False)
+    os = Column(String, nullable=True)
     cost_per_hour = Column(Float, nullable=True)
+    storage = Column(String, nullable=True)
+    gpu = Column(String, nullable=True)
+    virtualization_type = Column(String, nullable=True)
+    term_type = Column(String, nullable=True)
+    cpu_architecture = Column(String, nullable=True)
+    vgeneration = Column(String, nullable=True)
     cloud = Column(
         SqlEnum('AWS', 'Azure', 'GCP', name='cloud_enum'),
         nullable=False
     )
 
-POSTGRES_CONNECTION = "postgresql+psycopg://postgres:postgres@localhost:5432/app"
+POSTGRES_CONNECTION = "postgresql+psycopg://postgres:postgres@localhost:5433/app"
 engine = create_engine(POSTGRES_CONNECTION)
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
@@ -36,7 +42,11 @@ session = Session()
 try:
     # Load the data from the CSV
     df = pd.read_csv('script/cloud_comparison.csv')
-    
+
+    # Process the 'Memory (GIB)' column to remove 'GiB' and convert to float
+    df['Memory (GIB)'] = df['Memory (GIB)'].replace(r'\s*GiB', '', regex=True)  # Remove 'GiB'
+    df['Memory (GIB)'] = df['Memory (GIB)'].apply(pd.to_numeric, errors='coerce')  # Convert to float
+
     # Process the data and insert into the database
     for index, row in df.iterrows():
         # Log each row to verify
@@ -48,9 +58,15 @@ try:
             instance_type=row['Instance Type'],
             instance_family=row['Instance Family'],
             vcpus=int(row['CPU']),
-            ram_gib=float(row['RAM (GiB)']),
-            memory_mib=int(row['Memory MiB']),
+            memory_gb=row['Memory (GIB)'],
+            os=row['OS'],
             cost_per_hour=float(row['Cost Per Hour']),
+            storage=row['Storage'],
+            gpu=row['GPU'],
+            virtualization_type=row['Virtualization Type'],
+            term_type=row['Term Type'],
+            cpu_architecture=row['CPU Architecture'],
+            vgeneration=row['Vgeneration'],
             cloud=row['Cloud']
         )
         session.add(cloud_comparison)
@@ -65,3 +81,4 @@ except SQLAlchemyError as e:
 
 finally:
     session.close()
+
