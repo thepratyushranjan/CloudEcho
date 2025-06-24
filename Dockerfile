@@ -24,4 +24,4 @@ RUN ls -la /app
 EXPOSE 8069
 
 # Run the FastAPI application using uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8069", "--reload"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8069"]
