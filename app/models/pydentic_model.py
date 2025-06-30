@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from pydantic import BaseModel, field_validator, HttpUrl
+from pydantic import BaseModel, field_validator, HttpUrl, validator
 from typing import Any, Dict, List, Optional, Union, Literal
 from orm.cloud_response import CloudResponse
 
@@ -69,6 +69,13 @@ class CloudComparisonQueryMultipleRequest(BaseModel):
     regions: Optional[List[str]] = None
     instance_type: Optional[List[str]] = None
     os: Optional[List[str]] = None
+
+    @validator("os", pre=True, always=True)
+    def map_na_to_linux(cls, v):
+        return None if v is None else [
+            "Linux" if str(entry).strip().upper() == "NA" else entry
+            for entry in v
+        ]
 
 
 # This code defines a Pydantic model for a cloud comparison filter request.

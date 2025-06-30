@@ -102,17 +102,24 @@ def structured_data (content: Dict[str, Any], monitoring: Dict[str, Any]):
 
     return dict(items)
 
+
 def extract_basic_info(data: dict) -> dict:
+    meta = data.get("meta", {})
+    os_raw = meta.get("os")
+    # if os is None or the string "NA" (case-insensitive), default to "Linux"
+    if os_raw is None or (isinstance(os_raw, str) and os_raw.strip().upper() == "NA"):
+        os_value = "Linux"
+    else:
+        os_value = os_raw
 
     return {
         "cloud_resource_id": data.get("cloud_resource_id"),
-        "name":               data.get("name"),
-        "service_name":       data.get("service_name"),
-        "resource_type":      data.get("resource_type"),
-        "region":             data.get("region"),
-        "flavor":             data.get("meta", {}).get("flavor"),
-        "os":             data.get("meta", {}).get("os"),
-        "service_name": data.get("service_name"),
+        "name":              data.get("name"),
+        "service_name":      data.get("service_name"),
+        "resource_type":     data.get("resource_type"),
+        "region":            data.get("region"),
+        "flavor":            meta.get("flavor"),
+        "os":                os_value,
     }
 
 
