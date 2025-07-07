@@ -3,6 +3,7 @@ import time
 from google import genai
 from google.genai import types
 from config.config import Config
+client = genai.Client(api_key=Config.GEMINI_API_KEY)
 
 def read_system_instruction(file_path: str = "prompt/Chat_Bot_prompt.txt") -> str:
     file_path = os.path.abspath(file_path)
@@ -69,35 +70,37 @@ class LlmGenerator:
                 self.cache_created = False
             except Exception as e:
                 raise RuntimeError(f"Failed to delete cache: {e}")
-
-    def generate_query_response(self, combined_prompt: dict, temperature: float = 0.2) -> str:
-        """Stream a response, using the cache for the system instruction."""
+ 
+    def generate_query_response(self, combined_content: dict, query) -> str:
+        """Generate a response using the cache for the system instruction."""
         # Ensure cache exists (and log whether it's created or reused)
-        self.load_cache()
-        self.extend_cache()  # Optional: extend cache TTL if needed
-
+        if not self.cache:
+            self.load_cache()
+        else:
+            self.extend_cache()
         try:
             start = time.time()
-            stream = self.client.models.generate_content_stream(
-                model=self.llm_model_name,
-                config=types.GenerateContentConfig(
-                    cached_content=self.cache.name,
-                    temperature=temperature
-                ),
-                contents=combined_prompt,
-            )
-
+            system_prompt = f"""Role: system
+            Instruction:
+            {self.system_instruction}
+            Acknowledge and follow this behavior in all responses.
+            """
+            chat = client.chats.create(model=self.llm_model_name)
+            chat.send_message(system_prompt)
+            chat.send_message(combined_content)
+            response = chat.send_message_stream(query)
             response_text = ""
-            for chunk in stream:
+            for chunk in response:
                 if hasattr(chunk, "text"):
                     print(chunk.text, end="", flush=True)
                     response_text += chunk.text
             duration = time.time() - start
             print(f"\n[Done in {duration:.2f}s]")
             return response_text
-
         except Exception as e:
+            print(f"[Error] An error occurred while generating the response {e}.")
             raise RuntimeError(f"Error generating response: {e}")
 
-    def llm_query(self, combined_prompt: dict) -> str:
-        return self.generate_query_response(combined_prompt)
+
+    def llm_query(self, merged_content: dict, query) -> str:
+        return self.generate_query_response(merged_content, query)

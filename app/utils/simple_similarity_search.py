@@ -41,12 +41,12 @@ def perform_simple_similarity_search(collection_name: str, query: str, top_k: in
     results = vector_store.similarity_search(
         query,
         k=top_k,
-        score_threshold=0.3,
+        score_threshold=0.9,
     )
     merged_content = "\n\n".join([doc.page_content for doc in results])
-    prompt_data = {
-        "content": merged_content,
-        "question": query
-    }
-    combined_prompt = json.dumps(prompt_data, indent=2)
-    return combined_prompt
+    # prompt_data = {
+    #     "content": merged_content,
+    #     "question": query
+    # }
+    # combined_prompt = json.dumps(prompt_data, indent=2)
+    return merged_content

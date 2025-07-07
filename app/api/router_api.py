@@ -62,6 +62,7 @@ async def scrape_and_store_document(request: DocumentRequest):
 # Simple Query API Endpoints
 @router.post("/simple-query")
 async def query_docs(request: SimpleQueryRequest):
+    print(f"RAG Chat-Bot Query Excuted with request: {request}")
     """
     Queries the documentation database using vector search.
     The endpoint receives a query (and optionally a collection_name),
@@ -74,7 +75,6 @@ async def query_docs(request: SimpleQueryRequest):
             query=request.query, 
             collection_name=request.collection_name, 
             )
-        
         if not final_response:
             raise HTTPException(status_code=404, detail="No relevant documents found.")
         
