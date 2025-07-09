@@ -23,15 +23,10 @@ class CloudComparisonService:
         location: Optional[List[str]] = None,
         vcpus_min: Optional[int]       = None,
         vcpus_max: Optional[int]       = None,
-        ram_gib_min: Optional[float]   = None,
-        ram_gib_max: Optional[float]   = None,
+        memory_gb_min: Optional[str]   = None,
+        memory_gb_max: Optional[str]   = None,
     ) -> List[CloudComparison]:
-        """
-        Query by:
-          - location: list of substrings (ILIKE '%loc%')
-          - vcpus_min / vcpus_max
-          - ram_gib_min / ram_gib_max
-        """
+        
         session = SessionLocal()
         try:
             query = session.query(CloudComparison)
@@ -53,10 +48,10 @@ class CloudComparisonService:
                 query = query.filter(CloudComparison.vcpus <= vcpus_max)
 
             # 3) RAM range
-            if ram_gib_min is not None:
-                query = query.filter(CloudComparison.ram_gib >= ram_gib_min)
-            if ram_gib_max is not None:
-                query = query.filter(CloudComparison.ram_gib <= ram_gib_max)
+            if memory_gb_min is not None:
+                query = query.filter(CloudComparison.ram_gib >= memory_gb_min)
+            if memory_gb_max is not None:
+                query = query.filter(CloudComparison.ram_gib <= memory_gb_max)
 
             results = query.all()
 
@@ -89,6 +84,7 @@ class CloudMultipleDataService:
         instance_families: Optional[List[str]] = None,
         regions:   Optional[List[str]]         = None,
         instance_type: Optional[List[str]]    = None,
+        os:       Optional[List[str]]         = None,
     ) -> List[dict]:
         session = SessionLocal()
         try:
@@ -115,6 +111,9 @@ class CloudMultipleDataService:
 
             if instance_type:
                 query = query.filter(CloudComparison.instance_type.in_(instance_type))
+
+            if os:
+                query = query.filter(CloudComparison.os.in_(os))
 
             rows = query.all()
             response_dicts: List[dict] = []
@@ -145,70 +144,72 @@ class CloudMultipleDataService:
 
 
 class CloudComparisonFilterService:
-    def get_filtered_by_specs(
-        self,
-        vcpus: Optional[List[int]]               = None,
-        ram_gib: Optional[List[float]]           = None,
-        memory_mib: Optional[List[int]]          = None,
-        cost_per_hour: Optional[List[float]]     = None,
-        instance_families: Optional[List[str]]   = None,
-        country: Optional[List[str]] = None,
-    ) -> List[dict]:
-        session = SessionLocal()
-        try:
-            query = session.query(CloudComparison)
+   def get_filtered_by_specs(
+    self,
+    vcpus: Optional[List[int]]               = None,
+    memory_gb: Optional[List[str]]          = None,  # Treat memory_gb as a list of strings
+    cost_per_hour: Optional[List[float]]     = None,
+    instance_families: Optional[List[str]]   = None,
+    country: Optional[List[str]] = None,
+    os: Optional[List[str]] = None,
+) -> List[dict]:
+    session = SessionLocal()
+    try:
+        query = session.query(CloudComparison)
 
-            if vcpus is not None:
-                query = query.filter(CloudComparison.vcpus.in_(vcpus))
+        if vcpus is not None:
+            query = query.filter(CloudComparison.vcpus.in_(vcpus))
 
-            if ram_gib is not None:
-                query = query.filter(CloudComparison.ram_gib.in_(ram_gib))
+        if os is not None:
+            if isinstance(os, str):
+                query = query.filter(CloudComparison.os.in_([os]))
+            else:
+                query = query.filter(CloudComparison.os.in_(os))
 
-            if memory_mib is not None:
-                query = query.filter(CloudComparison.memory_mib.in_(memory_mib))
+        if memory_gb is not None:
+            # Treat memory_gb as strings, do not convert to int
+            query = query.filter(CloudComparison.memory_gb.in_(memory_gb))  # memory_gb is a list of strings
 
-            if instance_families is not None:
-                query = query.filter(CloudComparison.instance_family.in_(instance_families))
-            
-            if cost_per_hour is not None:
-                # Use the maximum value from the list as the upper bound
-                max_cost = max(cost_per_hour)
-                query = query.filter(CloudComparison.cost_per_hour <= max_cost)
+        if instance_families is not None:
+            query = query.filter(CloudComparison.instance_family.in_(instance_families))
+        
+        if cost_per_hour is not None:
+            # Use the maximum value from the list as the upper bound
+            max_cost = max(cost_per_hour)
+            query = query.filter(CloudComparison.cost_per_hour <= max_cost)
 
-            if country is not None:
-                expanded = expand_common_locations(country, clouds=[])
-                loc_conds = [
-                    CloudComparison.location.ilike(f"%{loc}%")
-                    for loc in expanded
-                ]
-                if loc_conds:
-                    query = query.filter(or_(*loc_conds))
+        if country is not None:
+            expanded = expand_common_locations(country, clouds=[])
+            loc_conds = [
+                CloudComparison.location.ilike(f"%{loc}%")
+                for loc in expanded
+            ]
+            if loc_conds:
+                query = query.filter(or_(*loc_conds))
 
-            rows = query.all()
-            response_dicts: List[dict] = []
+        rows = query.all()
+        response_dicts: List[dict] = []
 
-            for row in rows:
-                # 1) turn ORM object into a clean dict
-                d = row.__dict__.copy()
-                d.pop("_sa_instance_state", None)
+        for row in rows:
+            # 1) turn ORM object into a clean dict
+            d = row.__dict__.copy()
+            d.pop("_sa_instance_state", None)
 
-                # 2) guard against NaN cost_per_hour
-                cp = d.get("cost_per_hour")
-                if isinstance(cp, float) and math.isnan(cp):
-                    d["cost_per_hour"] = None
+            # 2) guard against NaN cost_per_hour
+            cp = d.get("cost_per_hour")
+            if isinstance(cp, float) and math.isnan(cp):
+                d["cost_per_hour"] = None
 
-                # 3) validate & coerce via Pydantic
-                cr = CloudResponse.model_validate(d)
+            # 3) validate & coerce via Pydantic
+            cr = CloudResponse.model_validate(d)
 
-                # 4) dump back to plain dict
-                response_dicts.append(cr.model_dump())
+            # 4) dump back to plain dict
+            response_dicts.append(cr.model_dump())
 
-            return response_dicts
-                
-        except Exception as e:
-            traceback.print_exc()
-            raise HTTPException(status_code=500, detail=str(e))
-        finally:
-            session.close()
-       
+        return response_dicts
 
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        session.close()

@@ -14,8 +14,8 @@ class CloudResponse(BaseModel):
     instance_type: str
     instance_family: str
     vcpus: int
-    ram_gib: float
-    memory_mib: int
+    memory_gb: str
+    os: str
     cost_per_hour: Optional[float] = None
     cloud: CloudEnum
     class Config:

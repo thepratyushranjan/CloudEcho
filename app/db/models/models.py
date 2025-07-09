@@ -35,14 +35,20 @@ class CloudComparison(Base):
     __tablename__ = "cloud_comparison"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    region = Column(String,  nullable=False)
-    location = Column(String,  nullable=False)
-    instance_type = Column(String,  nullable=False)
-    instance_family = Column(String,  nullable=False)
+    region = Column(String, nullable=False)
+    location = Column(String, nullable=False)
+    instance_type = Column(String, nullable=False)
+    instance_family = Column(String, nullable=False)
     vcpus = Column(Integer, nullable=False)
-    ram_gib = Column(Float,   nullable=False)
-    memory_mib = Column(Integer, nullable=False)
-    cost_per_hour = Column(Float,   nullable=True)
+    memory_gb = Column(String, nullable=False)
+    os = Column(String, nullable=True)
+    cost_per_hour = Column(Float, nullable=True)
+    storage = Column(String, nullable=True)
+    gpu = Column(String, nullable=True)
+    virtualization_type = Column(String, nullable=True)
+    term_type = Column(String, nullable=True)
+    cpu_architecture = Column(String, nullable=True)
+    vgeneration = Column(String, nullable=True)
     cloud = Column(
         Enum('AWS', 'Azure', 'GCP', name='cloud_enum'),
         nullable=False

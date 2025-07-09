@@ -19,6 +19,9 @@ def upgrade():
     # Ensure the uuid-ossp extension is available for UUID generation.
     op.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";')
 
+    # Ensure the pgvector extension is available for vector operations.
+    op.execute('CREATE EXTENSION IF NOT EXISTS "vector";')
+
     # Create the 'document_chunks' table if it doesn't exist.
     if not table_exists('document_chunks', conn):
         op.create_table(
@@ -76,3 +79,7 @@ def downgrade():
     op.drop_table('langchain_pg_embedding')
     op.drop_table('langchain_pg_collection')
     op.drop_table('document_chunks')
+    
+    # Drop extensions (order matters - drop vector before uuid-ossp)
+    op.execute('DROP EXTENSION IF EXISTS "vector";')
+    op.execute('DROP EXTENSION IF EXISTS "uuid-ossp";')

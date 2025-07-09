@@ -2,272 +2,127 @@
 
 from typing import List, Optional
 
-# COMMON_LOCATION_MAP = {
 
-#     "North America": {
-#     "AWS": [
-#       "US East (N. Virginia)",
-#       "US East (Ohio)",
-#       "US West (Oregon)",
-#       "US West (N. California)",
-#       "Canada (Central)"
-#     ],
-#     "GCP": [
-#       "Iowa",
-#       "Northern Virginia",
-#       "South Carolina",
-#       "Las Vegas",
-#       "Toronto",
-#       "Salt Lake City",
-#       "Columbus",
-#       "Los Angeles",
-#       "Montréal",
-#       "Dallas",
-#       "Mexico",
-#       "Oregon"
-#     ],
-#     "Azure": [
-#       "US East",
-#       "US East 2",
-#       "US Central",
-#       "US North Central",
-#       "US South Central",
-#       "US South Central 2",
-#       "US West",
-#       "US West 2",
-#       "US West 3",
-#       "US West Central",
-#       "CA Central",
-#       "CA East",
-#       "MX Central"
-#     ]
-#   },
-
-#   "South America": {
-#     "AWS": [
-#       "South America (São Paulo)"
-#     ],
-#     "GCP": [
-#       "São Paulo",
-#       "Santiago"
-#     ],
-#     "Azure": [
-#       "BR South",
-#       "BR Southeast",
-#       "CL Central"
-#     ]
-#   },
-
-#   "Europe": {
-#     "AWS": [
-#       "EU (Stockholm)",
-#       "EU (Paris)",
-#       "EU (Frankfurt)",
-#       "EU (Ireland)",
-#       "EU (London)"
-#     ],
-#     "GCP": [
-#       "Netherlands",
-#       "Belgium",
-#       "Finland",
-#       "Zurich",
-#       "Madrid",
-#       "Warsaw",
-#       "Milan",
-#       "Berlin",
-#       "Turin",
-#       "Frankfurt",
-#       "London",
-#       "Paris",
-#       "Stockholm"
-#     ],
-#     "Azure": [
-#       "EU North",
-#       "EU West",
-#       "FR Central",
-#       "FR South",
-#       "DE North",
-#       "DE West Central",
-#       "AT East",
-#       "ES Central",
-#       "IT North",
-#       "PL Central",
-#       "SE Central",
-#       "SE South",
-#       "UK South",
-#       "UK West",
-#       "CH North",
-#       "CH West"
-#     ]
-#   },
-
-#   "Asia Pacific": {
-#     "AWS": [
-#       "Asia Pacific (Tokyo)",
-#       "Asia Pacific (Sydney)",
-#       "Asia Pacific (Singapore)",
-#       "Asia Pacific (Mumbai)",
-#       "Asia Pacific (Osaka)",
-#       "Asia Pacific (Seoul)"
-#     ],
-#     "GCP": [
-#       "Taiwan",
-#       "Melbourne",
-#       "Delhi",
-#       "Hong Kong",
-#       "Jakarta",
-#       "Mumbai",
-#       "Mumbai",
-#       "Sydney",
-#       "Seoul",
-#       "Osaka",
-#     ],
-#     "Azure": [
-#       "AP East",
-#       "AP Southeast",
-#       "AU East",
-#       "AU Southeast",
-#       "ID Central",
-#       "IN Central",
-#       "IN Central Jio",
-#       "IN South",
-#       "IN West",
-#       "IN West Jio",
-#       "JA East",
-#       "JA West",
-#       "KR Central",
-#       "KR South",
-#       "MY West",
-#       "NZ North"
-#     ]
-#   },
-
-#   "Middle East & Africa": {
-#     "AWS": [],
-#     "GCP": [
-#       "Dammam",
-#       "Tel Aviv",
-#       "Doha",
-#       "Johannesburg"
-#     ],
-#     "Azure": [
-#       "AE Central",
-#       "AE North",
-#       "QA Central",
-#       "IL Central",
-#       "ZA North",
-#       "ZA West"
-#     ]
-#   },
-
-#   #add more locations as needed
-# }
 
 COMMON_COUNTRY_MAP = {
     "India": {
         "AWS": [
-            "Asia Pacific (Mumbai)",
-            "Asia Pacific (Hyderabad)"
+            "Mumbai",
+            "Hyderabad"
         ],
         "GCP": [
             "Mumbai",
             "Delhi"
         ],
         "Azure": [
-            "IN Central",
-            "IN Central Jio",
-            "IN South",
-            "IN West",
-            "IN West Jio"
+            "Central India",
+            "South India",
+            "West India "
         ]
     },
 
      "USA": {
         "AWS": [
-            "US East (N. Virginia)",
-            "US East (Ohio)",
-            "US West (Oregon)",
-            "US West (N. California)"
+            "N.Virginia",
+            "Ohio",
+            "Oregon",
+            "N.California"
         ],
         "GCP": [
+            "Council Bluffs",
             "Iowa",
+            "Moncks Corner",
+            "South Carolina"
+            "Ashburn",
             "Northern Virginia",
-            "South Carolina",
-            "Las Vegas",
-            "Salt Lake City",
             "Columbus",
-            "Los Angeles",
+            "Ohio",
             "Dallas",
-            "Oregon"
+            "Texas",
+            "The Dalles",
+            "Oregon",
+            "Los Angeles",
+            "California",
+            "Salt Lake City",
+            "Utah",
+            "Las Vegas",
+            "Nevada",
+
         ],
         "Azure": [
-            "US East",
-            "US East 2",
-            "US Central",
-            "US North Central",
-            "US South Central",
-            "US South Central 2",
-            "US West",
-            "US West 2",
-            "US West 3",
-            "US West Central"
+            "West US ",
+            "East US 2",
+            "East US ",
+            "West US 2",
+            "West Central US",
+            "West US 3",
+            "Central US",
+            "South Central US",
+            "North Central US",
+            
         ]
     },
 
     "Australia": {
         "AWS": [
-            "Asia Pacific (Sydney)"
+            "Sydney",
+            "Melbourne",
         ],
         "GCP": [
             "Melbourne",
             "Sydney"
         ],
         "Azure": [
-            "AU East",
-            "AU Southeast"
+            "Australia Central",
+            "Australia East",
+            "Australia Southeast"
         ]
     },
 
-    "Austria": {
+    "Norway": {
         "AWS": [],
         "GCP": [],
         "Azure": [
-            "AT East"
+            "Norway East"
         ]
     },
+
 
     "Belgium": {
         "AWS": [],
         "GCP": [
-            "Belgium"
+            "Belgium",
+            "St. Ghislain"
         ],
         "Azure": []
     },
 
     "Brazil": {
         "AWS": [
-            "South America (São Paulo)"
+            "Sao Paulo"
         ],
         "GCP": [
-            "São Paulo"
+            "Osasco (São Paulo)"
         ],
         "Azure": [
-            "BR South",
-            "BR Southeast"
+            "Brazil South"
         ]
     },
 
     "Canada": {
         "AWS": [
-            "Canada (Central)"
+            "Central",
+            "Calgary"
         ],
         "GCP": [
             "Toronto",
-            "Montréal"
+            "Montréal",
+            "Québec",
+            "Ontario"
         ],
         "Azure": [
-            "CA Central",
-            "CA East"
+            "Canada East",
+            "Canada Central"
         ]
     },
 
@@ -276,43 +131,41 @@ COMMON_COUNTRY_MAP = {
         "GCP": [
             "Santiago"
         ],
-        "Azure": [
-            "CL Central"
-        ]
+        "Azure": []
     },
 
     "Finland": {
         "AWS": [],
         "GCP": [
-            "Finland"
+            "Finland",
+            "Hamina"
         ],
         "Azure": []
     },
 
      "France": {
         "AWS": [
-            "EU (Paris)"
+            "Paris"
         ],
         "GCP": [
             "Paris"
         ],
         "Azure": [
-            "FR Central",
-            "FR South"
+            "France Central"
         ]
     },
 
     "Germany": {
         "AWS": [
-            "EU (Frankfurt)"
+            "Frankfurt"
         ],
         "GCP": [
             "Berlin",
-            "Frankfurt"
+            "Frankfurt",
+            "Germany"
         ],
         "Azure": [
-            "DE North",
-            "DE West Central"
+            "Germany West Central"
         ]
     },
 
@@ -321,11 +174,15 @@ COMMON_COUNTRY_MAP = {
         "GCP": [
             "Hong Kong"
         ],
-        "Azure": []
+        "Azure": [
+            "East Asia"
+        ]
     },
 
     "Indonesia": {
-        "AWS": [],
+        "AWS": [
+            "Jakarta"
+        ],
         "GCP": [
             "Jakarta"
         ],
@@ -336,29 +193,34 @@ COMMON_COUNTRY_MAP = {
 
      "Ireland": {
         "AWS": [
-            "EU (Ireland)"
+            "Ireland"
         ],
         "GCP": [],
         "Azure": [
-            "EU North"
+            "North Europe"
         ]
     },
 
     "Israel": {
-        "AWS": [],
+        "AWS": [
+            "Tel Aviv"
+        ],
         "GCP": [
             "Tel Aviv"
         ],
         "Azure": [
-            "IL Central"
+            "Tel Aviv"
         ]
     },
 
     "Italy": {
-        "AWS": [],
+        "AWS": [
+            "Milan"
+        ],
         "GCP": [
             "Milan",
-            "Turin"
+            "Turin",
+            "Italy"
         ],
         "Azure": [
             "IT North"
@@ -367,15 +229,16 @@ COMMON_COUNTRY_MAP = {
 
     "Japan": {
         "AWS": [
-            "Asia Pacific (Tokyo)",
-            "Asia Pacific (Osaka)"
-        ],
-        "GCP": [
+            "Tokyo",
             "Osaka"
         ],
+        "GCP": [
+            "Osaka",
+            "Tokyo"
+        ],
         "Azure": [
-            "JA East",
-            "JA West"
+            "Japan East",
+            "Japan West"
         ]
     },
 
@@ -390,20 +253,19 @@ COMMON_COUNTRY_MAP = {
     "Mexico": {
         "AWS": [],
         "GCP": [
-            "Mexico"
+            "Mexico",
+            "Queretaro"
         ],
-        "Azure": [
-            "MX Central"
-        ]
+        "Azure": []
     },
 
     "Netherlands": {
         "AWS": [],
         "GCP": [
-            "Netherlands"
+            "Eemshaven"
         ],
         "Azure": [
-            "EU West"
+            "West Europe"
         ]
     },
 
@@ -421,7 +283,7 @@ COMMON_COUNTRY_MAP = {
             "Warsaw"
         ],
         "Azure": [
-            "PL Central"
+            "Poland Central"
         ]
     },
 
@@ -431,52 +293,59 @@ COMMON_COUNTRY_MAP = {
             "Doha"
         ],
         "Azure": [
-            "QA Central"
+            "Qatar Central"
         ]
     },
 
     "Saudi Arabia": {
         "AWS": [],
         "GCP": [
-            "Dammam"
+            "Dammam","Saudi Arabia"
         ],
         "Azure": []
     },
 
     "Singapore": {
         "AWS": [
-            "Asia Pacific (Singapore)"
+            "Singapore"
         ],
-        "GCP": [], 
-        "Azure": []
+        "GCP": [
+            "Jurong West"
+        ], 
+        "Azure": [
+            "Southeast Asia"
+        ]
     },
 
     "South Africa": {
-        "AWS": [],
+        "AWS": [
+            "Cape Town"
+        ],
         "GCP": [
             "Johannesburg"
         ],
         "Azure": [
-            "ZA North",
-            "ZA West"
+            "South Africa North"
         ]
     },
 
     "South Korea": {
         "AWS": [
-            "Asia Pacific (Seoul)"
+            "Seoul"
         ],
         "GCP": [
             "Seoul"
         ],
         "Azure": [
-            "KR Central",
-            "KR South"
+            "Korea South ",
+            "Korea Central"
         ]
     },
 
     "Spain": {
-        "AWS": [],
+        "AWS": [
+            "Spain"
+        ],
         "GCP": [
             "Madrid"
         ],
@@ -487,76 +356,63 @@ COMMON_COUNTRY_MAP = {
 
     "Sweden": {
         "AWS": [
-            "EU (Stockholm)"
+            "Stockholm"
         ],
         "GCP": [
             "Stockholm"
         ],
         "Azure": [
-            "SE Central",
-            "SE South"
+            "Sweden Central"
         ]
     },
 
      "Switzerland": {
-        "AWS": [],
+        "AWS": [
+            "Zurich"
+        ],
         "GCP": [
             "Zurich"
         ],
         "Azure": [
-            "CH North",
-            "CH West"
+            "Switzerland North"
         ]
     },
 
     "Taiwan": {
         "AWS": [],
         "GCP": [
-            "Taiwan"
+            "Taiwan",
+            "Changhua County"
         ],
         "Azure": []
     },
 
     "United Arab Emirates": {
-        "AWS": [],
+        "AWS": [
+            "UAE",
+            "Bahrain"
+        ],
         "GCP": [],
         "Azure": [
-            "AE Central",
-            "AE North"
+            "UAE North"
         ]
     },
 
     "United Kingdom": {
         "AWS": [
-            "EU (London)"
-        ],
-        "GCP": [
             "London"
         ],
+        "GCP": [
+            "London","England"
+        ],
         "Azure": [
-            "UK South",
-            "UK West"
+            "UK West",
+            "UK South"
         ]
     },
 }
 
-# def expand_common_locations(
-#     requested: List[str],
-#     clouds: Optional[List[str]]
-# ) -> List[str]:
-#     expanded: List[str] = []
-#     # lowercase→canonical lookup
-#     canonical = {k.lower(): k for k in COMMON_LOCATION_MAP}
-#     for loc in requested:
-#         key = loc.strip().lower()
-#         if key in canonical:
-#             per_cloud = COMMON_LOCATION_MAP[canonical[key]]
-#             targets = clouds or per_cloud.keys()
-#             for c in targets:
-#                 expanded += per_cloud.get(c, [])
-#         else:
-#             expanded.append(loc)
-#     return expanded
+
 
 
 def expand_common_locations(
@@ -617,6 +473,94 @@ AWS_REGION_TO_COUNTRY = {
     "us-gov-west-1": "USA"
 }
 
+AZURE_REGION_TO_COUNTRY = {
+    "North Europe": "Ireland",
+    "Canada East": "Canada",
+    "Germany West Central": "Germany",
+    "Japan East": "Japan",
+    "West US": "USA",
+    "East US": "USA",
+    "East US 2": "USA",
+    "West US 2": "USA",
+    "West Central US": "USA",
+    "West US 3": "USA",
+    "Central India": "India",
+    "UAE North": "United Arab Emirates",
+    "Sweden Central": "Sweden",
+    "Australia Central": "Australia",
+    "Japan West": "Japan",
+    "Korea South": "South Korea",
+    "East Asia": "Hong Kong",
+    "Australia East": "Australia",
+    "Poland Central": "Poland",
+    "Brazil South": "Brazil",
+    "West Europe": "Netherlands",
+    "Central US": "USA",
+    "Norway East": "Norway",
+    "Southeast Asia": "Singapore",
+    "South Central US": "USA",
+    "North Central US": "USA",
+    "South India": "India",
+    "Canada Central": "Canada",
+    "Switzerland North": "Switzerland",
+    "UK West": "United Kingdom",
+    "France Central": "France",
+    "UK South ": "United Kingdom",
+    "Qatar Central": "Qatar",
+    "Korea Central": "South Korea",
+    "Australia Southeast": "Australia",
+    "West India": "India",
+    "South Africa North": "South Africa",
+}
 
+GCP_REGION_TO_COUNTRY = {
+    "africa-south1": "South Africa",
+    "asia-east1":"Taiwan",
+    "asia-east2": "Hong Kong",
+    "asia-northeast1": "Japan",
+    "asia-northeast2": "Japan",
+    "asia-northeast3": "South Korea",
+    "asia-south1": "India",
+    "asia-south2": "India",
+    "asia-southeast1": "Singapore",
+    "asia-southeast2": "Indonesia",
+    "australia-southeast1": "Australia",
+    "australia-southeast2": "Australia",
+    "europe-central2":"Poland",
+    "europe-north1": "Finland",
+    "europe-west6": "Switzerland",
+    "europe-west1": "Belgium",
+    "europe-west10": "Germany",
+    "europe-west12": "Italy",
+    "europe-west2":"United Kingdom",
+    "europe-west3": "Germany",
+    "europe-west4": "Netherlands",
+    "europe-west8": "Italy",
+    "europe-west9": "France",
+    "me-central1": "Qatar",
+    "me-central2": "Saudi Arabia",
+    "me-west1": "Israel",
+    "northamerica-northeast1": "Canada",
+    "northamerica-northeast2": "Canada",
+    "northamerica-south1": "Mexico",
+    "southamerica-east1": "Brazil",
+    "southamerica-west1": "Chile",
+    "us-central1": "USA",
+    "us-east1": "USA",
+    "us-east4": "USA",
+    "us-east5": "USA",
+    "us-south1": "USA",
+    "us-west1": "USA",
+    "us-west2": "USA",
+    "us-west3": "USA",
+    "us-west4": "USA",
+    "europe-southwest1": "Spain",
+}
 def get_country_from_aws_region_code(region_code: str) -> Optional[str]:
     return AWS_REGION_TO_COUNTRY.get(region_code)
+
+def get_country_from_azure_region_code(region_code: str) -> Optional[str]:
+    return AZURE_REGION_TO_COUNTRY.get(region_code)
+
+def get_country_from_gcp_region_code(region_code: str) -> Optional[str]:
+    return GCP_REGION_TO_COUNTRY.get(region_code)

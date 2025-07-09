@@ -26,9 +26,9 @@ class SimpleQueryService:
             if faq_result:
                 print("FAQ result found, returning it.")
                 return faq_result
-            combined_prompt = perform_simple_similarity_search(collection_name, query, top_k=k)
+            merged_content = perform_simple_similarity_search(collection_name, query, top_k=k)
             llm_generator = LlmGenerator()
-            final_response = llm_generator.llm_query(combined_prompt)
+            final_response = llm_generator.llm_query(merged_content, query)
             return final_response
             
         except Exception as e:
