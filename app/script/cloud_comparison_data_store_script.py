@@ -33,7 +33,7 @@ class CloudComparison(Base):
         nullable=False
     )
 
-POSTGRES_CONNECTION = "postgresql+psycopg://postgres:postgres@localhost:5433/app"
+POSTGRES_CONNECTION = "postgresql+psycopg://postgres:postgres@localhost:5444/app"
 engine = create_engine(POSTGRES_CONNECTION)
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
