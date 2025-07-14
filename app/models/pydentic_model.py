@@ -33,7 +33,6 @@ class SimpleQueryRequest(BaseModel):
 
 # This code defines a Pydantic model for a checklist analysis request.
 class ChecklistAnalysisRequest(BaseModel):
-    query: str
     request: Dict[str, Any]
 
 

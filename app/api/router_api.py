@@ -33,7 +33,7 @@ from models.pydentic_model import (
     SimpleQueryRequest,
     QueryRequest,
 )
-from utils.checklist_llm import ChecklistLlmGenerator
+from utils.checklist_llm import ChecklistLlmGenerator, merge_codeblock_jsons
 from utils.details_llm import DetailsLlmGenerator
 from utils.http_client import get_async_client
 
@@ -113,20 +113,16 @@ async def query_docs(request: QueryRequest):
 async def checklist_analysis(payload: ChecklistAnalysisRequest):
     try:
         content = payload.request
-        query = payload.query
-
-        # Clean up and transform the raw content
         transform_content = transform_data(content)
-        data = {
-            "content": transform_content,
-            "question": query,
-        }
-        final_data = json.dumps(data, indent=2)
-
-        # Invoke the checklist-specific LLM generator
         checklist_llm_generator = ChecklistLlmGenerator()
-        response = checklist_llm_generator.llm_query(final_data)
-        return {"response": response}
+        overview_response = checklist_llm_generator.overview_query(transform_content)
+        cost_control_response = checklist_llm_generator.cost_control_query(transform_content)
+        uses_and_forcaset = checklist_llm_generator.usage_and_forecast_query(transform_content)
+        security_response = checklist_llm_generator.security_query(transform_content)
+        applied_rules = checklist_llm_generator.applied_rules(transform_content)
+        meta_tag = checklist_llm_generator.meta_tag_query(transform_content)
+        merged_json_str = merge_codeblock_jsons(overview_response, cost_control_response, uses_and_forcaset, security_response, applied_rules, meta_tag)
+        return {"response": merged_json_str}
 
     except Exception as e:
         raise HTTPException(
