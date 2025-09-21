@@ -16,6 +16,7 @@ let cachedDomainInstruction = null;
 function resolvePromptPath() {
   // Prefer project-local path; try a couple of likely bases
   const candidates = [
+    path.join(process.cwd(), 'src', 'app', 'prompt', 'chat-bot.md'),
     path.join(process.cwd(), 'prompt', 'chat-bot.md'),
     path.join(process.cwd(), 'agentic-chatbot', 'prompt', 'chat-bot.md'),
   ];

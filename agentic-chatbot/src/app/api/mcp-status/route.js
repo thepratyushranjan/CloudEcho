@@ -1,7 +1,9 @@
+import { loadAllMCPTools } from '@/app/lib/mcp';
 import { NextResponse } from 'next/server';
-import { loadAllMCPTools } from '../../../lib/mcp.js';
 
 export const runtime = 'nodejs';
+
+// GET Request :- mcp-status
 
 export async function GET() {
   let resources = null;
@@ -29,3 +31,4 @@ export async function GET() {
     }
   }
 }
+

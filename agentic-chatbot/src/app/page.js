@@ -117,7 +117,7 @@ function ReasoningSection({ reasoning }) {
   );
 }
 
-const Sample = () => {
+export default function Sample() {
   // Messages now include reasoning: { role: 'user'|'assistant', content: string, reasoning?: string }
   const [messages, setMessages] = useState([
     {
@@ -159,7 +159,7 @@ const Sample = () => {
         if (!stopped) {
           const providers = data?.providers || {};
           const toolList = Object.entries(providers).flatMap(([p, arr]) =>
-            ((arr as Array<any[]>) || []).map((t) => `${p}.${t}`)
+            (arr || []).map((t) => `${p}.${t}`)
           );
           setMcpStatus({
             checking: false,
@@ -208,7 +208,7 @@ const Sample = () => {
         .filter((m) => m.role !== "system")
         .map((m) => ({ role: m.role, content: m.content })); // Strip reasoning from history
 
-      const res = await fetch("/api/chatbot?stream=1", {
+      const res = await fetch("/api/chat?stream=1", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: trimmed, messages: history }),
@@ -456,4 +456,4 @@ const Sample = () => {
       </form>
     </div>
   );
-};
+}
