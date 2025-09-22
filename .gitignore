@@ -13,3 +13,4 @@ __pycache__
 .vscode/settings.json
 app/__pycache__/*
 app/__pycache__/*
+.project
