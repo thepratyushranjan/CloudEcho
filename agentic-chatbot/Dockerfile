@@ -2,6 +2,7 @@
 # Builder stage: install all deps, build, then prune dev deps
 FROM node:20-bookworm-slim AS builder
 WORKDIR /app
+RUN mkdir -p /app/prompt
 
 # Install dependencies (include dev deps for build)
 COPY package*.json ./
@@ -11,47 +12,34 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
+# Prune dev dependencies for runtime
+RUN npm prune --omit=dev
+
 # Runtime stage: add Docker CLI and tini so the app can run MCP via `docker run`
 FROM node:20-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
-ENV HOSTNAME=0.0.0.0
-ENV PORT=8079
 
-# Install Docker CLI (not the daemon) and tini
+# Install docker CLI + tini
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        ca-certificates \
-        curl \
-        gnupg \
-        lsb-release \
-        tini \
-    && curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends docker-ce-cli \
+    && apt-get install -y --no-install-recommends docker.io tini \
     && rm -rf /var/lib/apt/lists/*
 
-# Create non-root user for security
-RUN groupadd --gid 1001 nodejs \
-    && useradd --uid 1001 --gid nodejs --shell /bin/bash --create-home nextjs
-
 # Copy built artifacts and needed files
-COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/package*.json ./
-COPY --from=builder --chown=nextjs:nodejs /app/next.config.mjs ./next.config.mjs
-COPY --from=builder --chown=nextjs:nodejs /app/src ./src
-COPY --from=builder --chown=nextjs:nodejs /app/mcp-config.json ./mcp-config.json
-
-# Install only production dependencies
-RUN npm ci --only=production && npm cache clean --force
-
-# Switch to non-root user
-USER nextjs
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/next.config.mjs ./next.config.mjs
+COPY --from=builder /app/src ./src
+COPY --from=builder /app/mcp-config.json ./mcp-config.json
+COPY --from=builder /app/prompt ./prompt
+COPY --from=builder /app/postcss.config.mjs ./postcss.config.mjs
+COPY --from=builder /app/eslint.config.mjs ./eslint.config.mjs
+COPY --from=builder /app/jsconfig.json ./jsconfig.json
 
 # Expose Next.js port
-EXPOSE 8079
+EXPOSE 3000
 
 # Start the app
-CMD ["tini", "--", "npm", "run", "start", "--", "-H", "0.0.0.0", "-p", "8079"]
+CMD ["tini", "--", "npm", "run", "start"]
