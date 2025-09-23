@@ -2,5 +2,9 @@
   "mongo-http": {
     "transport": "http",
     "url": "${MDB_MCP_CONNECTION_STRING}"
+  },
+  "maria-http": {
+    "transport": "http",
+    "url": "${MARIA_MCP_CONNECTION_STRING}"
   }
 }
