@@ -1,21 +1,6 @@
 {
-    "mongodb": {
-        "command": "docker",
-        "args": [
-            "run",
-            "-i",
-            "--rm",
-            "--network=host",
-            "-e",
-            "MDB_MCP_CONNECTION_STRING",
-            "mcp/mongodb"
-        ],
-        "env": {
-            "MDB_MCP_CONNECTION_STRING": "mongodb://localhost:27017/"
-        }
-    },
-    "mariadb-mcp-server": {
-        "url": "http://host.docker.internal:9001/sse",
-        "type": "sse"
-    }
+  "mongo-http": {
+    "transport": "http",
+    "url": "${MDB_MCP_CONNECTION_STRING}"
+  }
 }
