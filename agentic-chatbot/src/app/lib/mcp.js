@@ -5,7 +5,7 @@ import { experimental_createMCPClient } from 'ai';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 
-// Only allow these tool names (case sensitive)
+// Allow MariaDB tool
 const ALLOWED_TOOLS = new Set([
   'connect',
   'list-collections',
@@ -14,14 +14,9 @@ const ALLOWED_TOOLS = new Set([
   'count',
   'aggregate',
   'explain',
-  'execute_sql' // <-- MariaDB MCP tool name
+  'execute_sql' // MariaDB MCP tool
 ]);
 
-/**
- * Loads all MCP providers defined in ./mcp-config.json
- * Returns { tools: Record<string, ToolDef>, closeAll: () => Promise<void> }
- * Tool names are namespaced as "<provider>.<tool>"
- */
 export async function loadAllMCPTools() {
   const configPath = path.join(process.cwd(), 'mcp-config.json');
   const raw = await fs.readFile(configPath, 'utf8');
@@ -40,8 +35,7 @@ export async function loadAllMCPTools() {
         env: { ...process.env, ...(entry.env || {}) }
       });
     } else if (entry?.url) {
-      transport = new SSEClientTransport(new URL(entry.url), {
-      });
+      transport = new SSEClientTransport(new URL(entry.url), {});
     } else {
       continue;
     }
