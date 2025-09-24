@@ -6,8 +6,8 @@ import path from 'path';
 const WRITE_NAME_RE = /(insert|update|delete|create[-_ ]?index|drop|write|bulk|merge|out)$/i;
 
 export function looksDbRelated(q = '') {
-  // Enhanced to detect MariaDB/SQL queries and account/name lookups
-  return /\b(db|database|collection|collections|find|aggregate|count|index|indexes|schema|stats|log|logs|explain|collstats|storage size|size on disk|perf|performance|mongodb|mariadb|sql|account|account id|name|user|customer|lookup|search for|get|retrieve)\b/i.test(q);
+  // Enhanced to detect MariaDB/SQL queries and account/organization lookups
+  return /\b(db|database|collection|collections|find|aggregate|count|index|indexes|schema|stats|log|logs|explain|collstats|storage size|size on disk|perf|performance|mongodb|mariadb|sql|account|account id|organization|org id|orgid|name|user|customer|lookup|search for|get|retrieve)\b/i.test(q);
 }
 
 // --- domain instruction loader ---------------------------------------------
@@ -15,9 +15,7 @@ let cachedDomainInstruction = null;
 
 function resolvePromptPaths() {
   const basePaths = [
-    // When CWD is the agentic-chatbot root
     path.join(process.cwd(), 'src', 'app', 'prompt'),
-    // When CWD is the monorepo root
     path.join(process.cwd(), 'agentic-chatbot', 'src', 'app', 'prompt'),
   ];
   
@@ -91,14 +89,14 @@ export async function planTools(model, historyMessages, tools, providerOptions) 
   const systemContent = `You are a strict planner. Decide which MCP tools to use.
 
 Database Selection Rules:
-- For account names, account IDs, user lookups, customer searches → use mariadb-mcp-server.execute_sql with database name information_schema
-- For cloud costs, expenses, resources, security checks → use MongoDB tools
+- For cloud account names, account IDs, organization ID, user lookups → prefer mariadb-mcp-server.execute_sql
+- For cloud costs, expenses, resources, security checks, Recommendations → use MongoDB tools
 - For MongoDB queries → use appropriate mongodb tools (find, aggregate, count, etc.)
+- In MongoDB queries, do not fabricate or assume any data under any circumstances.
 
 IMPORTANT for MariaDB:
-- Always use database name is information_schema
-- Used table name is "cloudaccount"
-- NEVER hallucinate table or database names
+- Do NOT assume database or table names. Use only names provided by configuration or prior tool responses
+- NEVER hallucinate database, table, or column names o any type of data.
 - Validate SQL queries before execution
 
 ${domain ? domain + '\n' : ''}
@@ -132,6 +130,42 @@ Return STRICT JSON only: {"tools":[{"name":"<exact-tool-name>","why":"<short>"}]
 export function ensureMeaningfulResponse(text, toolResults) {
   const minimalResponses = ['done', 'done.', 'completed', 'finished', 'ok', 'okay'];
   const isMinimal = minimalResponses.includes(text.toLowerCase().trim());
+  
+  // If tools ran but produced empty/zero results, return a clear no-results message
+  if (toolResults && toolResults.length > 0) {
+    let sawAnyData = false;
+    let sawExplicitZero = false;
+    for (const result of toolResults) {
+      const contents = Array.isArray(result?.content) ? result.content : [result?.content].filter(Boolean);
+      for (const c of contents) {
+        if (c?.type === 'text' && typeof c.text === 'string') {
+          const t = c.text.trim();
+          if (!t) continue;
+          // Heuristics for empty results
+          if (t === '[]' || /^\s*\{\s*\}\s*$/.test(t) || /\bno results?\b/i.test(t) || /\bnot found\b/i.test(t)) {
+            sawExplicitZero = true;
+            continue;
+          }
+          try {
+            const parsed = JSON.parse(t);
+            if (Array.isArray(parsed) && parsed.length === 0) {
+              sawExplicitZero = true;
+            } else if (parsed && typeof parsed === 'object' && Object.keys(parsed).length === 0) {
+              sawExplicitZero = true;
+            } else {
+              sawAnyData = true;
+            }
+          } catch {
+            // Non-JSON text content; assume it may be data
+            if (t.length > 0) sawAnyData = true;
+          }
+        }
+      }
+    }
+    if (!sawAnyData && sawExplicitZero) {
+      return "I couldn't find any matching records for your request. Please verify the ID or provide more context (e.g., account ID, organization ID, or resource details).";
+    }
+  }
   
   if (isMinimal && toolResults && toolResults.length > 0) {
     let fallback = "I've completed the operation. ";

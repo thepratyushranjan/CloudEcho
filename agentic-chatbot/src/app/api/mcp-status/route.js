@@ -1,34 +1,20 @@
-import { loadAllMCPTools } from '@/app/lib/mcp';
+
 import { NextResponse } from 'next/server';
+import { pingAllMCPProviders} from '@/app/lib/mcp';
 
 export const runtime = 'nodejs';
 
-// GET Request :- mcp-status
-
 export async function GET() {
-  let resources = null;
   try {
-    const { tools, closeAll } = await loadAllMCPTools();
-    resources = { closeAll };
-
-    const providers = {};
-    for (const full of Object.keys(tools)) {
-      const [provider, tool] = full.split('.');
-      if (!providers[provider]) providers[provider] = [];
-      providers[provider].push(tool);
-    }
-
+    const pingResults = await pingAllMCPProviders();
+    const connected = Array.isArray(pingResults) && pingResults.some(r => r.ok);
     return NextResponse.json({
-      ok: true,
-      providers,
-      totalTools: Object.keys(tools).length,
+      ok: connected,
+      connected,
+      result: connected ? 'ping' : 'pong',
+      totalProviders: pingResults.length,
     });
   } catch (e) {
     return NextResponse.json({ ok: false, error: e.message }, { status: 500 });
-  } finally {
-    if (resources?.closeAll) {
-      try { await resources.closeAll(); } catch {}
-    }
   }
 }
-
