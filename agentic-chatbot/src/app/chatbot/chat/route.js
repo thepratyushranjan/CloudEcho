@@ -15,6 +15,17 @@ import {
 
 export const runtime = "nodejs";
 
+// OPTIONS Request for CORS preflight
+export async function OPTIONS() {
+  return new Response(null, {
+    headers: {
+      'Access-Control-Allow-Origin': 'http://localhost:5173',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  });
+}
+
 // POST Request :- chat
 
 export async function POST(req) {
@@ -49,13 +60,17 @@ export async function POST(req) {
       extractBetween(formattedText, "<CONTENT>", "</CONTENT>") || formattedText;
 
     if (streamMode) {
-      return await createStreamResponse(
+      const response = await createStreamResponse(
         contentText,
         reasoningText,
         plannedToolNames,
         result,
         toolsExecuted
       );
+      response.headers.set('Access-Control-Allow-Origin', 'http://localhost:5173');
+      response.headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
+      return response;
     }
 
     return NextResponse.json({
@@ -66,6 +81,12 @@ export async function POST(req) {
       toolResults: result?.toolResults || [],
       toolsExecuted,
       modelUsed: needsTools ? "gemini-2.5-pro" : "gemini-2.5-flash",
+    }, {
+      headers: {
+        'Access-Control-Allow-Origin': 'http://localhost:5173',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
     });
   } catch (err) {
     const isAbort = err?.name === "AbortError";
@@ -75,7 +96,14 @@ export async function POST(req) {
           ? "Timed out waiting for model/tools"
           : err?.message || "Internal Error",
       },
-      { status: 500 }
+      {
+        status: 500,
+        headers: {
+          'Access-Control-Allow-Origin': 'http://localhost:5173',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
+      }
     );
   } finally {
     if (resources?.closeAll) {

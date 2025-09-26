@@ -130,7 +130,7 @@ export default function Sample() {
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // MCP status (providers map from /api/mcp-status)
+  // MCP status (providers map from /chatbot/mcp-status)
   const [mcpStatus, setMcpStatus] = useState({
     checking: true,
     connected: false,
@@ -152,10 +152,10 @@ export default function Sample() {
     let stopped = false;
     const fetchStatus = async () => {
       try {
-        const res = await fetch("/api/mcp-status");
+        const res = await fetch("/chatbot/mcp-status");
         const data = await res.json();
 
-        // New API shape: { ok, providers, totalTools }
+        // New chatbot shape: { ok, providers, totalTools }
         if (!stopped) {
           const providers = data?.providers || {};
           const toolList = Object.entries(providers).flatMap(([p, arr]) =>
@@ -176,7 +176,7 @@ export default function Sample() {
             connected: false,
             totalTools: 0,
             tools: [],
-            error: "Unable to reach /api/mcp-status",
+            error: "Unable to reach /chatbot/mcp-status",
           });
         }
       }
@@ -208,7 +208,7 @@ export default function Sample() {
         .filter((m) => m.role !== "system")
         .map((m) => ({ role: m.role, content: m.content })); // Strip reasoning from history
 
-      const res = await fetch("/api/chat?stream=1", {
+      const res = await fetch("/chatbot/chat?stream=1", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: trimmed, messages: history }),
