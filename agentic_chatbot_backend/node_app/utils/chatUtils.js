@@ -2,6 +2,8 @@ import { AGENT_POLICY, FORMAT_DIRECTIVE } from "../prompt/constant_prompt.js";
 import { CONFIG } from "./config.js";
 import { google } from "@ai-sdk/google";
 
+const FOLLOWUP_MARKER = "**What would you like to explore next?**";
+
 export const SYSTEM_PROMPTS = {
   base: (domain, availableTools, toolsWereExecuted) => {
     const followUpInstruction = toolsWereExecuted
@@ -126,6 +128,80 @@ ${finalText}
   return finalText;
 }
 
+const sleep = (ms) => (ms ? new Promise((resolve) => setTimeout(resolve, ms)) : Promise.resolve());
+
+function splitContentSections(contentText = "") {
+  if (typeof contentText !== "string") {
+    return { mainText: "", followupText: "" };
+  }
+
+  const idx = contentText.indexOf(FOLLOWUP_MARKER);
+  if (idx === -1) {
+    return { mainText: contentText, followupText: "" };
+  }
+
+  return {
+    mainText: contentText.slice(0, idx).trimEnd(),
+    followupText: contentText.slice(idx).trimStart(),
+  };
+}
+
+export async function* streamChatEvents(
+  {
+    contentText,
+    reasoningText,
+    plannedTools,
+    result,
+    toolsExecuted,
+  },
+  { chunkSize = CONFIG.CHUNK_SIZE, delayMs = CONFIG.STREAM_DELAY } = {}
+) {
+  try {
+    const { mainText, followupText } = splitContentSections(contentText || "");
+
+    for (let i = 0; i < mainText.length; i += chunkSize) {
+      const part = mainText.slice(i, i + chunkSize);
+      if (part) {
+        yield JSON.stringify({ type: "content", delta: part }) + "\n";
+      }
+      await sleep(delayMs);
+    }
+
+    if (followupText) {
+      for (let i = 0; i < followupText.length; i += chunkSize) {
+        const part = followupText.slice(i, i + chunkSize);
+        if (part) {
+          yield JSON.stringify({ type: "followupquestion", delta: part }) + "\n";
+        }
+        await sleep(delayMs);
+      }
+    }
+
+    const toolCalls = Array.isArray(result?.toolCalls) ? result.toolCalls : [];
+    const metadata = [
+      { type: "reasoning", content: reasoningText || null },
+      {
+        type: "meta",
+        plannedTools,
+        toolCalls,
+        toolsExecuted,
+      },
+      { type: "done" },
+    ];
+
+    for (const data of metadata) {
+      yield JSON.stringify(data) + "\n";
+    }
+  } catch (error) {
+    yield (
+      JSON.stringify({
+        type: "error",
+        error: error?.message || "stream error",
+      }) + "\n"
+    );
+  }
+}
+
 export async function createStreamResponse(
   contentText,
   reasoningText,
@@ -138,57 +214,22 @@ export async function createStreamResponse(
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        const FOLLOWUP_MARKER = "**What would you like to explore next?**";
-        let mainText = contentText;
-        let followupText = "";
-        const idx = contentText.indexOf(FOLLOWUP_MARKER);
-        if (idx !== -1) {
-          mainText = contentText.slice(0, idx).trimEnd();
-          followupText = contentText.slice(idx).trimStart();
-        }
-
-        for (let i = 0; i < mainText.length; i += CONFIG.CHUNK_SIZE) {
-          const part = mainText.slice(i, i + CONFIG.CHUNK_SIZE);
-          const line = JSON.stringify({ type: "content", delta: part }) + "\n";
-          controller.enqueue(encoder.encode(line));
-          await new Promise((r) => setTimeout(r, CONFIG.STREAM_DELAY));
-        }
-
-        if (followupText) {
-          for (let i = 0; i < followupText.length; i += CONFIG.CHUNK_SIZE) {
-            const part = followupText.slice(i, i + CONFIG.CHUNK_SIZE);
-            const line =
-              JSON.stringify({ type: "followupquestion", delta: part }) + "\n";
-            controller.enqueue(encoder.encode(line));
-            await new Promise((r) => setTimeout(r, CONFIG.STREAM_DELAY));
-          }
-        }
-
-        const metadata = [
-          { type: "reasoning", content: reasoningText || null },
+        for await (const line of streamChatEvents(
           {
-            type: "meta",
+            contentText,
+            reasoningText,
             plannedTools,
-            toolCalls: result.toolCalls || [],
+            result,
             toolsExecuted,
           },
-          { type: "done" },
-        ];
-
-        metadata.forEach((data) => {
-          controller.enqueue(encoder.encode(JSON.stringify(data) + "\n"));
-        });
-
-        controller.close();
-      } catch (e) {
-        controller.enqueue(
-          encoder.encode(
-            JSON.stringify({
-              type: "error",
-              error: e?.message || "stream error",
-            }) + "\n"
-          )
-        );
+          {
+            chunkSize: CONFIG.CHUNK_SIZE,
+            delayMs: CONFIG.STREAM_DELAY,
+          }
+        )) {
+          controller.enqueue(encoder.encode(line));
+        }
+      } finally {
         controller.close();
       }
     },

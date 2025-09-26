@@ -18,7 +18,7 @@ class ChatRequest(BaseModel):
     )
     stream: bool | None = Field(
         default=None,
-        description="Set to 1/true to request streaming (currently ignored).",
+        description="Set to true (or use ?stream=1) to request newline-delimited streaming responses.",
     )
 
 

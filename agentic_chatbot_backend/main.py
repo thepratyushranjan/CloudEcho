@@ -1,8 +1,14 @@
 from __future__ import annotations
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import StreamingResponse
 
-from .node_bridge import NodeBridgeError, run_chat_helper, run_mcp_status_helper
+from .node_bridge import (
+    NodeBridgeError,
+    run_chat_helper,
+    run_mcp_status_helper,
+    stream_chat_helper,
+)
 from .schemas import ChatRequest, ChatResponse, MCPStatusResponse
 
 
@@ -10,12 +16,34 @@ def create_app() -> FastAPI:
     app = FastAPI(title="Agentic Chatbot Backend", version="0.1.0")
 
     @app.post("/chatbot/chat", response_model=ChatResponse)
-    async def chat_endpoint(request: ChatRequest) -> ChatResponse:
+    async def chat_endpoint(
+        request: ChatRequest, stream: bool | None = Query(default=None)
+    ) -> ChatResponse | StreamingResponse:
+        query_stream = bool(request.stream)
+        if stream is not None:
+            query_stream = query_stream or stream
+
         payload = {
             "query": request.query,
             "messages": [message.model_dump() for message in request.messages],
-            "stream": bool(request.stream),
+            "stream": query_stream,
         }
+
+        if query_stream:
+            try:
+                stream_gen = await stream_chat_helper(payload)
+            except NodeBridgeError as exc:
+                raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+            return StreamingResponse(
+                stream_gen,
+                media_type="application/x-ndjson; charset=utf-8",
+                headers={
+                    "Cache-Control": "no-cache, no-transform",
+                    "Connection": "keep-alive",
+                },
+            )
+
         try:
             result = await run_chat_helper(payload)
         except NodeBridgeError as exc:

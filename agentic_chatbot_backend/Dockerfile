@@ -17,16 +17,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
-COPY fastapi_backend/requirements.txt ./requirements.txt
+COPY agentic_chatbot_backend/requirements.txt ./requirements.txt
 RUN pip install -r requirements.txt
 
 # Install Node dependencies for the helper scripts
-COPY fastapi_backend/package.json fastapi_backend/package.json
-RUN npm install --prefix fastapi_backend --omit=dev
+COPY agentic_chatbot_backend/package.json agentic_chatbot_backend/package.json
+RUN npm install --prefix agentic_chatbot_backend --omit=dev
 
 # Copy project code
-COPY fastapi_backend ./fastapi_backend
+COPY agentic_chatbot_backend ./agentic_chatbot_backend
 
-EXPOSE 8000
+EXPOSE 8088
 
-CMD ["uvicorn", "fastapi_backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "agentic_chatbot_backend.main:app", "--host", "0.0.0.0", "--port", "8088"]

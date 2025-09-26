@@ -29,6 +29,19 @@ function resolveEnvVars(value) {
   return value;
 }
 
+function ensureHttpUrl(value) {
+  if (typeof value !== 'string') return value;
+  const trimmed = value.trim();
+  if (!trimmed) return trimmed;
+  if (/^[a-zA-Z][a-zA-Z\d+.-]*:/.test(trimmed)) {
+    return trimmed;
+  }
+  if (trimmed.startsWith('//')) {
+    return `http:${trimmed}`;
+  }
+  return `http://${trimmed}`;
+}
+
 function createTransport(provider, entry) {
   if (entry.command) {
     return new StdioClientTransport({
@@ -46,7 +59,7 @@ function createTransport(provider, entry) {
 
     let url;
     try {
-      url = new URL(entry.url);
+      url = new URL(ensureHttpUrl(entry.url));
     } catch (err) {
       throw new Error(
         `Invalid URL "${entry.url}" for ${transportType.toUpperCase()} transport on provider "${provider}": ${err.message}`
@@ -151,21 +164,33 @@ export async function pingAllMCPProviders() {
 
   try {
     for (const [provider, entry] of Object.entries(config || {})) {
-      let transport = null;
-      if (entry?.command) {
-        transport = new StdioClientTransport({
-          command: entry.command,
-          args: Array.isArray(entry.args) ? entry.args : [],
-          env: { ...process.env, ...(entry.env || {}) },
-        });
-      } else if (entry?.url) {
-        transport = new SSEClientTransport(new URL(entry.url), {});
-      } else {
-        continue;
+      if (!entry) continue;
+
+      let client = null;
+      let connectionError = null;
+
+      try {
+        const normalized = resolveEnvVars(entry);
+        const transport = createTransport(provider, normalized);
+        client = await experimental_createMCPClient({ transport });
+        clients.push(client);
+      } catch (err) {
+        connectionError = err;
       }
 
-      const client = await experimental_createMCPClient({ transport });
-      clients.push(client);
+      if (!client) {
+        const failure = {
+          provider,
+          ok: false,
+          pong: null,
+          latencyMs: null,
+          error: connectionError?.message || String(connectionError || 'Unable to initialise MCP client'),
+          ts: new Date().toISOString(),
+        };
+        results.push(failure);
+        addRecentPing(failure);
+        continue;
+      }
 
       const startedAt = Date.now();
       let ok = false;
