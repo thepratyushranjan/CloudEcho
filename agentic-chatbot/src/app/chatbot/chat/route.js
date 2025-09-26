@@ -15,101 +15,138 @@ import {
 
 export const runtime = "nodejs";
 
-// OPTIONS Request for CORS preflight
-export async function OPTIONS() {
-  return new Response(null, {
-    headers: {
-      'Access-Control-Allow-Origin': 'http://localhost:5173',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
-  });
-}
+// CORS configuration - Allow all origins
+const CORS_CONFIG = {
+  origin: '*',
+  methods: 'GET, POST, PUT, DELETE, OPTIONS, PATCH',
+  headers: 'Content-Type, Authorization, X-Requested-With, Accept, Origin',
+};
 
-// POST Request :- chat
+// Create CORS headers
+const createCorsHeaders = () => ({
+  'Access-Control-Allow-Origin': CORS_CONFIG.origin,
+  'Access-Control-Allow-Methods': CORS_CONFIG.methods,
+  'Access-Control-Allow-Headers': CORS_CONFIG.headers,
+  'Access-Control-Allow-Credentials': 'true',
+  'Access-Control-Max-Age': '86400', // Cache preflight for 24 hours
+});
 
-export async function POST(req) {
-  let resources = null;
+// Error response factory
+const createErrorResponse = (message, status = 500) => {
+  return NextResponse.json(
+    { error: message },
+    { status, headers: createCorsHeaders() }
+  );
+};
 
+// Success response factory
+const createSuccessResponse = (data) => {
+  return NextResponse.json(data, { headers: createCorsHeaders() });
+};
+
+// Extract and format response content
+const extractResponseContent = (formattedText) => {
+  const reasoning = extractBetween(formattedText, "<EXPLANATION>", "</EXPLANATION>");
+  const content = extractBetween(formattedText, "<CONTENT>", "</CONTENT>") || formattedText;
+  return { reasoning, content };
+};
+
+// Process the chat request
+const processChatRequest = async (query, history, streamMode) => {
+  const { tools: allTools, closeAll } = await loadAllMCPTools();
+  
   try {
-    const url = new URL(req.url);
-    const streamMode = url.searchParams.get("stream") === "1";
-    const body = await req.json();
-    const { query, history } = validateRequest(body);
-
-    const { tools: allTools, closeAll } = await loadAllMCPTools();
-    resources = { closeAll };
-
     const safeTools = buildToolSet(allTools, query);
     const domain = loadDomainInstruction();
     const needsTools = requiresTools(query, safeTools) || looksDbRelated(query);
-
-    // Process request based on tool requirements
-    const { result, finalText, toolsExecuted, plannedToolNames } =
-      needsTools && Object.keys(safeTools).length > 0
-        ? await processWithTools(query, history, safeTools, domain)
-        : await processWithoutTools(query, history, domain);
-
+    const hasTools = Object.keys(safeTools).length > 0;
+    
+    // Select processing strategy
+    const processStrategy = needsTools && hasTools ? processWithTools : processWithoutTools;
+    const processorArgs = needsTools && hasTools 
+      ? [query, history, safeTools, domain]
+      : [query, history, domain];
+    
+    const { result, finalText, toolsExecuted, plannedToolNames } = 
+      await processStrategy(...processorArgs);
+    
     const formattedText = formatResponse(finalText, toolsExecuted);
-    const reasoningText = extractBetween(
-      formattedText,
-      "<EXPLANATION>",
-      "</EXPLANATION>"
-    );
-    const contentText =
-      extractBetween(formattedText, "<CONTENT>", "</CONTENT>") || formattedText;
-
+    const { reasoning, content } = extractResponseContent(formattedText);
+    
+    // Build response data
+    const responseData = {
+      content,
+      reasoning,
+      plannedToolNames,
+      result,
+      toolsExecuted,
+      modelUsed: needsTools ? "gemini-2.5-pro" : "gemini-2.5-flash",
+    };
+    
+    // Handle streaming response
     if (streamMode) {
-      const response = await createStreamResponse(
-        contentText,
-        reasoningText,
+      const streamResponse = await createStreamResponse(
+        content,
+        reasoning,
         plannedToolNames,
         result,
         toolsExecuted
       );
-      response.headers.set('Access-Control-Allow-Origin', 'http://localhost:5173');
-      response.headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-      response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
-      return response;
+      
+      // Apply CORS headers to stream response
+      Object.entries(createCorsHeaders()).forEach(([key, value]) => {
+        streamResponse.headers.set(key, value);
+      });
+      
+      return streamResponse;
     }
-
-    return NextResponse.json({
-      result: contentText,
-      reasoning: reasoningText,
+    
+    // Return standard JSON response
+    return createSuccessResponse({
+      result: content,
+      reasoning,
       plannedTools: plannedToolNames,
       toolCalls: result?.toolCalls || [],
       toolResults: result?.toolResults || [],
       toolsExecuted,
-      modelUsed: needsTools ? "gemini-2.5-pro" : "gemini-2.5-flash",
-    }, {
-      headers: {
-        'Access-Control-Allow-Origin': 'http://localhost:5173',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
+      modelUsed: responseData.modelUsed,
     });
-  } catch (err) {
-    const isAbort = err?.name === "AbortError";
-    return NextResponse.json(
-      {
-        error: isAbort
-          ? "Timed out waiting for model/tools"
-          : err?.message || "Internal Error",
-      },
-      {
-        status: 500,
-        headers: {
-          'Access-Control-Allow-Origin': 'http://localhost:5173',
-          'Access-Control-Allow-Methods': 'POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
-        },
-      }
-    );
+    
   } finally {
-    if (resources?.closeAll) {
+    // Ensure resources are cleaned up
+    if (closeAll) {
       try {
-        await resources.closeAll();
-      } catch {}
+        await closeAll();
+      } catch {
+        // Silently handle cleanup errors
+      }
     }
+  }
+};
+
+// OPTIONS Request for CORS preflight
+export async function OPTIONS() {
+  return new Response(null, { headers: createCorsHeaders() });
+}
+
+// POST Request - Main chat endpoint
+export async function POST(req) {
+  try {
+    // Parse request parameters
+    const url = new URL(req.url);
+    const streamMode = url.searchParams.get("stream") === "1";
+    const body = await req.json();
+    const { query, history } = validateRequest(body);
+    
+    // Process the chat request
+    return await processChatRequest(query, history, streamMode);
+    
+  } catch (err) {
+    // Handle different error types
+    const errorMessage = err?.name === "AbortError"
+      ? "Timed out waiting for model/tools"
+      : err?.message || "Internal Error";
+    
+    return createErrorResponse(errorMessage);
   }
 }
