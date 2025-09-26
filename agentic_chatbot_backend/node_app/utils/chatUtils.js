@@ -138,7 +138,6 @@ export async function createStreamResponse(
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        // Detect and split follow-up questions from main content
         const FOLLOWUP_MARKER = "**What would you like to explore next?**";
         let mainText = contentText;
         let followupText = "";
@@ -148,7 +147,6 @@ export async function createStreamResponse(
           followupText = contentText.slice(idx).trimStart();
         }
 
-        // Stream main content in chunks
         for (let i = 0; i < mainText.length; i += CONFIG.CHUNK_SIZE) {
           const part = mainText.slice(i, i + CONFIG.CHUNK_SIZE);
           const line = JSON.stringify({ type: "content", delta: part }) + "\n";
@@ -156,7 +154,6 @@ export async function createStreamResponse(
           await new Promise((r) => setTimeout(r, CONFIG.STREAM_DELAY));
         }
 
-        // Stream follow-up questions (if present) with a different type
         if (followupText) {
           for (let i = 0; i < followupText.length; i += CONFIG.CHUNK_SIZE) {
             const part = followupText.slice(i, i + CONFIG.CHUNK_SIZE);
@@ -167,7 +164,6 @@ export async function createStreamResponse(
           }
         }
 
-        // Stream metadata
         const metadata = [
           { type: "reasoning", content: reasoningText || null },
           {

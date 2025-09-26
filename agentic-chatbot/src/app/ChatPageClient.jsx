@@ -150,7 +150,7 @@ export default function ChatPageClient() {
     let stopped = false;
     const fetchStatus = async () => {
       try {
-        const res = await fetch("/api/mcp-status");
+        const res = await fetch("chatbot/mcp-status");
         const data = await res.json();
 
         if (!stopped) {
@@ -173,7 +173,7 @@ export default function ChatPageClient() {
             connected: false,
             totalTools: 0,
             tools: [],
-            error: "Unable to reach /api/mcp-status",
+            error: "Unable to reach chatbot/mcp-status",
           });
         }
       }
@@ -203,7 +203,7 @@ export default function ChatPageClient() {
         .filter((m) => m.role !== "system")
         .map((m) => ({ role: m.role, content: m.content }));
 
-      const res = await fetch("/api/chat?stream=1", {
+      const res = await fetch("chatbot/chat?stream=1", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: trimmed, messages: history }),

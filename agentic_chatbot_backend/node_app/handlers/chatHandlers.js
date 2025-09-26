@@ -17,7 +17,6 @@ import {
   isMinimalResponse,
 } from "../utils/chatUtils.js";
 
-// --- Core Logic ---
 export async function generateResponse(modelType, messages, tools, budget, signal) {
   const model = getModel(modelType);
 
@@ -30,7 +29,6 @@ export async function generateResponse(modelType, messages, tools, budget, signa
     experimental_providerOptions: buildProviderOptions(budget),
   });
 
-  // Collect the full text from the stream
   let text = "";
   for await (const chunk of textStream) {
     text += chunk;
@@ -95,7 +93,6 @@ export async function interpretResults(query, toolResults) {
 export async function processWithTools(query, history, safeTools, domain) {
   const proModel = getModel("pro");
 
-  // Plan tools
   const plannedToolNames = await planTools(
     proModel,
     [...sanitizeHistory(history), { role: "user", content: query }],
@@ -107,7 +104,6 @@ export async function processWithTools(query, history, safeTools, domain) {
   const executeBudget = looksDbRelated(query) ? 128 : BUDGETS.EXECUTE;
   const systemPrompt = SYSTEM_PROMPTS.base(domain, execTools, false);
 
-  // Generate with tools
   const runGen = withTimeout(
     (signal) =>
       generateResponse(
@@ -123,7 +119,6 @@ export async function processWithTools(query, history, safeTools, domain) {
   let result = await runGen.run();
   let toolsExecuted = hasToolCalls(result);
 
-  // Retry for DB queries without tool usage
   if (
     looksDbRelated(query) &&
     !toolsExecuted &&
@@ -140,7 +135,6 @@ export async function processWithTools(query, history, safeTools, domain) {
 
   let finalText = (result?.text || "").trim();
 
-  // Handle minimal responses with tool results
   if (isMinimalResponse(finalText) && result.toolResults?.length > 0) {
     const interpreted = await interpretResults(query, result.toolResults);
     finalText = (interpreted || finalText).trim();

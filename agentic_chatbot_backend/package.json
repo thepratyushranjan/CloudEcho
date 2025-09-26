@@ -1,0 +1,11 @@
+{
+  "name": "agentic-fastapi-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@ai-sdk/google": "^2.0.14",
+    "@modelcontextprotocol/sdk": "^1.18.1",
+    "ai": "^5.0.48"
+  }
+}
