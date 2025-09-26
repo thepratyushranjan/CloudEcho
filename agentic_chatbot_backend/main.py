@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
 from .node_bridge import (
@@ -14,6 +15,15 @@ from .schemas import ChatRequest, ChatResponse, MCPStatusResponse
 
 def create_app() -> FastAPI:
     app = FastAPI(title="Agentic Chatbot Backend", version="0.1.0")
+
+    # Add CORS middleware
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],  # In production, specify your frontend domain
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     @app.post("/chatbot/chat", response_model=ChatResponse)
     async def chat_endpoint(
