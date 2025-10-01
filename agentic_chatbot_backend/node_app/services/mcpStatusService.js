@@ -18,7 +18,6 @@ export async function getMCPStatus() {
     connected,
     result: connected ? "ping" : "pong",
     totalProviders: Array.isArray(pingResults) ? pingResults.length : 0,
-    totalTools: 0,
     providers: mapProviders(pingResults),
   };
 }

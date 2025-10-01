@@ -37,7 +37,6 @@ class MCPStatusResponse(BaseModel):
     connected: bool
     result: str | None = None
     totalProviders: int = 0
-    totalTools: int | None = None
     providers: dict[str, list[str]] | None = None
     error: str | None = None
 
