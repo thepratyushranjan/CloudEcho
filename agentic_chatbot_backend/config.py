@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from os import getenv
 from pathlib import Path
-
+import os
 
 BASE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = BASE_DIR
@@ -42,3 +42,15 @@ __all__ = [
     "resolve_node_executable",
     "resolve_node_timeout",
 ]
+
+class Config:
+    def __init__(self):
+        # Google Generative AI API key
+        self.GOOGLE_GENERATIVE_AI_API_KEY = os.getenv("GOOGLE_GENERATIVE_AI_API_KEY")
+        if not self.GOOGLE_GENERATIVE_AI_API_KEY:
+            raise ValueError("Missing environment variable: GOOGLE_GENERATIVE_AI_API_KEY")
+
+        # Postgres connection string
+        self.POSTGRES_CONNECTION = os.getenv("POSTGRES_CONNECTION")
+        if not self.POSTGRES_CONNECTION:
+            raise ValueError("Missing environment variable: POSTGRES_CONNECTION")

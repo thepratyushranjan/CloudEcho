@@ -3,6 +3,8 @@ from __future__ import annotations
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
+from enum import Enum
+from typing import Optional
 
 
 class ChatMessage(BaseModel):
@@ -39,6 +41,26 @@ class MCPStatusResponse(BaseModel):
     totalProviders: int = 0
     providers: dict[str, list[str]] | None = None
     error: str | None = None
+
+
+class CloudEnum(str, Enum):
+    AWS = 'AWS'
+    Azure = 'Azure'
+    GCP = 'GCP'
+
+class CloudResponse(BaseModel):
+    id: int
+    region: str
+    location: str
+    instance_type: str
+    instance_family: str
+    vcpus: int
+    memory_gb: str
+    os: str
+    cost_per_hour: Optional[float] = None
+    cloud: CloudEnum
+    class Config:
+        from_attributes = True
 
 
 __all__ = [
