@@ -27,19 +27,16 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     result: str
     reasoning: str | None = None
-    plannedTools: list[str] = Field(default_factory=list)
-    toolCalls: list[Any] = Field(default_factory=list)
-    toolResults: list[Any] = Field(default_factory=list)
-    toolsExecuted: bool = False
+    # plannedTools: list[str] = Field(default_factory=list)
+    # toolCalls: list[Any] = Field(default_factory=list)
+    # toolResults: list[Any] = Field(default_factory=list)
+    # toolsExecuted: bool = False
     modelUsed: str | None = None
 
 
 class MCPStatusResponse(BaseModel):
-    ok: bool
     connected: bool
     result: str | None = None
-    totalProviders: int = 0
-    providers: dict[str, list[str]] | None = None
     error: str | None = None
 
 

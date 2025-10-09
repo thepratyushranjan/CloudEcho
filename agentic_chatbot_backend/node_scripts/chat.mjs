@@ -25,12 +25,12 @@ import {
         {
           contentText: meta.contentText || chat.response?.result || "",
           reasoningText: meta.reasoningText || chat.response?.reasoning || null,
-          plannedTools: meta.plannedToolNames || chat.response?.plannedTools || [],
+          // plannedTools: meta.plannedToolNames || chat.response?.plannedTools || [],
           result: meta.rawResult || chat.response || {},
-          toolsExecuted:
-            typeof meta.toolsExecuted === "boolean"
-              ? meta.toolsExecuted
-              : Boolean(chat.response?.toolsExecuted),
+          // toolsExecuted:
+          //   typeof meta.toolsExecuted === "boolean"
+          //     ? meta.toolsExecuted
+          //     : Boolean(chat.response?.toolsExecuted),
         },
         { delayMs: 0 }
       )) {

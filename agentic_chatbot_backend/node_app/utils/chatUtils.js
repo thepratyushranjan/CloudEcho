@@ -177,16 +177,16 @@ export async function* streamChatEvents(
       }
     }
 
-    const toolCalls = Array.isArray(result?.toolCalls) ? result.toolCalls : [];
+    // const toolCalls = Array.isArray(result?.toolCalls) ? result.toolCalls : [];
     const metadata = [
-      { type: "reasoning", content: reasoningText || null },
-      {
-        type: "meta",
-        plannedTools,
-        toolCalls,
-        toolsExecuted,
-      },
-      { type: "done" },
+      { type: "reasoning", content: reasoningText || null }
+      // {
+      //   type: "meta",
+      //   plannedTools,
+      //   toolCalls,
+      //   toolsExecuted,
+      // },
+      // { type: "done" },
     ];
 
     for (const data of metadata) {

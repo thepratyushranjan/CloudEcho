@@ -51,20 +51,20 @@ export async function runChatWorkflow({ query, history }) {
       response: {
         result: contentText,
         reasoning: reasoningText || null,
-        plannedTools: plannedToolNames || [],
-        toolCalls: result?.toolCalls || [],
-        toolResults: result?.toolResults || [],
-        toolsExecuted: Boolean(toolsExecuted),
+        // plannedTools: plannedToolNames || [],
+        // toolCalls: result?.toolCalls || [],
+        // toolResults: result?.toolResults || [],
+        // toolsExecuted: Boolean(toolsExecuted),
         modelUsed: handlerUsesTools ? PRO_MODEL : FLASH_MODEL,
-      },
-      meta: {
-        formattedText,
-        contentText,
-        reasoningText,
-        plannedToolNames: plannedToolNames || [],
-        rawResult: result,
-        toolsExecuted: Boolean(toolsExecuted),
-      },
+      }
+      // meta: {
+      //   formattedText,
+      //   contentText,
+      //   reasoningText,
+      //   plannedToolNames: plannedToolNames || [],
+      //   rawResult: result,
+      //   toolsExecuted: Boolean(toolsExecuted),
+      // },
     };
   } finally {
     try {
