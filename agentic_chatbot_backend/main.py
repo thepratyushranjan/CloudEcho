@@ -61,6 +61,7 @@ def create_app() -> FastAPI:
             "query": request.query,
             "messages": [message.model_dump() for message in request.messages],
             "stream": query_stream,
+            "context": request.context.model_dump() if request.context else None,
         }
 
         if query_stream:

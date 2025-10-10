@@ -121,9 +121,6 @@ export async function loadAllMCPTools() {
       const targetDesc = normalized.url
         ? normalized.url
         : normalized.command || "unknown";
-      // console.info(
-      //   `[MCP] Initializing provider "${provider}" via ${transportKind} -> ${targetDesc}`
-      // );
       const transport = createTransport(provider, normalized);
       const client = await experimental_createMCPClient({ transport });
 

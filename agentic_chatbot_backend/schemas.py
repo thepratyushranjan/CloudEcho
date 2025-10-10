@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from pydantic import BaseModel, Field
 from enum import Enum
@@ -10,6 +10,11 @@ from typing import Optional
 class ChatMessage(BaseModel):
     role: Literal["user", "assistant", "system"]
     content: str
+
+
+class ChatContext(BaseModel):
+    organization_id: Optional[str] = None
+    cloud_account_id: Optional[str] = None
 
 
 class ChatRequest(BaseModel):
@@ -22,15 +27,15 @@ class ChatRequest(BaseModel):
         default=None,
         description="Set to true (or use ?stream=1) to request newline-delimited streaming responses.",
     )
+    context: Optional[ChatContext] = Field(
+        default=None,
+        description="Optional context for the chat request",
+    )
 
 
 class ChatResponse(BaseModel):
     result: str
     reasoning: str | None = None
-    # plannedTools: list[str] = Field(default_factory=list)
-    # toolCalls: list[Any] = Field(default_factory=list)
-    # toolResults: list[Any] = Field(default_factory=list)
-    # toolsExecuted: bool = False
     modelUsed: str | None = None
 
 
@@ -61,6 +66,7 @@ class CloudResponse(BaseModel):
 
 
 __all__ = [
+    "ChatContext",
     "ChatMessage",
     "ChatRequest",
     "ChatResponse",

@@ -64,8 +64,8 @@ Database Selection Rules:
 
 Core rules:
 - ALWAYS use information_schema database for MariaDB
-- For MariaDB account name lookups, construct SQL  example:
-  SELECT id COALESCE(deleted_at, 0) AS deleted_at FROM \`my-db\`.cloudaccount WHERE name = %s AND (deleted_at = 0) ORDER BY id ;
+- For MariaDB account name lookups, construct an SQL query like this example:
+  SELECT id, name, organization_id, COALESCE(deleted_at, 0) AS deleted_at FROM \`my-db\`.cloudaccount WHERE name = %s AND (deleted_at = 0) ORDER BY id;
 - For MongoDB, follow the collection guidance in domain instructions
 - Never hallucinate database, table, or collection names
 - Do not fabricate or Never hallucinate or assume any data under any circumstances.
@@ -87,7 +87,7 @@ CRITICAL OUTPUT RULES:
 - ALWAYS interpret and explain tool results in natural language
 - When tools return data, you MUST:
   1. Summarize findings clearly
-  2. Highlight key information (especially IDs for lookups)
+  2. Highlight key information (especially IDs, name and organization_id for lookups)
   3. Present data in readable format
   4. Provide context about the data
 - If query results are empty, explicitly state: "No records were found matching your request."
@@ -98,7 +98,7 @@ CRITICAL OUTPUT RULES:
 
 MariaDB-specific:
 - Database is always information_schema
-- Highlight returned IDs prominently
+- Highlight returned IDs, name and organization_id prominently
 - Format SQL results clearly
 
 MongoDB-specific:

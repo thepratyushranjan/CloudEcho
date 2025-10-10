@@ -103,6 +103,7 @@ export const getModel = (modelType) =>
 export function validateRequest(body) {
   const query = typeof body?.query === "string" ? body.query.trim() : "";
   const history = Array.isArray(body?.messages) ? body.messages : [];
+  const context = body?.context && typeof body.context === "object" ? body.context : null;
 
   if (!query) {
     throw new Error('Invalid "query" provided');
@@ -112,7 +113,7 @@ export function validateRequest(body) {
     throw new Error("GOOGLE_GENERATIVE_AI_API_KEY not set");
   }
 
-  return { query, history };
+  return { query, history, context };
 }
 
 export function formatResponse(finalText, toolsExecuted) {

@@ -17,23 +17,46 @@ import {
 const PRO_MODEL = "gemini-2.5-pro";
 const FLASH_MODEL = "gemini-2.5-flash";
 
-export async function runChatWorkflow({ query, history }) {
+export async function runChatWorkflow({ query, history, context }) {
   let closeAll = async () => {};
 
   try {
     const { tools: allTools, closeAll: disposer } = await loadAllMCPTools();
     closeAll = typeof disposer === "function" ? disposer : async () => {};
 
-    const safeTools = buildToolSet(allTools, query);
+    // Regex to check if the query already contains a UUID
+    const uuidRegex = /[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i;
+    const queryHasId = uuidRegex.test(query);
+
+    let augmentedQuery = query;
+    // If the query is generic (no ID) and context exists, append the relevant ID.
+    if (!queryHasId && context) {
+      if (context.cloud_account_id) {
+        augmentedQuery = `${query} for cloud account ID \`${context.cloud_account_id}\``;
+      } else if (context.organization_id) {
+        augmentedQuery = `${query} for organization ID \`${context.organization_id}\``;
+      }
+    } else if (context) {
+      // If query already has an ID, just prepend the context for the model's awareness.
+      const contextString = Object.entries(context)
+        .filter(([, value]) => value)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(", ");
+      if (contextString) {
+        augmentedQuery = `(Context: ${contextString}) ${query}`;
+      }
+    }
+
+    const safeTools = buildToolSet(allTools, augmentedQuery);
     const domain = loadDomainInstruction();
-    const needsTools = requiresTools(query, safeTools) || looksDbRelated(query);
+    const needsTools = requiresTools(augmentedQuery, safeTools) || looksDbRelated(augmentedQuery);
 
     const handlerUsesTools =
       needsTools && Object.keys(safeTools).length > 0;
 
     const workflowResult = handlerUsesTools
-      ? await processWithTools(query, history, safeTools, domain)
-      : await processWithoutTools(query, history, domain);
+      ? await processWithTools(augmentedQuery, history, safeTools, domain)
+      : await processWithoutTools(augmentedQuery, history, domain);
 
     const { result, finalText, toolsExecuted, plannedToolNames } =
       workflowResult;
@@ -51,20 +74,16 @@ export async function runChatWorkflow({ query, history }) {
       response: {
         result: contentText,
         reasoning: reasoningText || null,
-        // plannedTools: plannedToolNames || [],
-        // toolCalls: result?.toolCalls || [],
-        // toolResults: result?.toolResults || [],
-        // toolsExecuted: Boolean(toolsExecuted),
         modelUsed: handlerUsesTools ? PRO_MODEL : FLASH_MODEL,
-      }
-      // meta: {
-      //   formattedText,
-      //   contentText,
-      //   reasoningText,
-      //   plannedToolNames: plannedToolNames || [],
-      //   rawResult: result,
-      //   toolsExecuted: Boolean(toolsExecuted),
-      // },
+      },
+      meta: {
+        contentText,
+        reasoningText,
+        plannedTools: plannedToolNames,
+        toolsExecuted,
+        rawResult: result,
+        modelUsed: handlerUsesTools ? PRO_MODEL : FLASH_MODEL,
+      },
     };
   } finally {
     try {
