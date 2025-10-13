@@ -13,6 +13,23 @@ export function looksDbRelated(q = "") {
   );
 }
 
+export function isGreetingOrGeneral(query) {
+  const q = query.toLowerCase().trim();
+
+  const greetingPatterns = [
+    /^\s*h(i|ey|ello|owdy)\b/,
+    /^\s*good (morning|afternoon|evening)/,
+    /^\s*how are you/,
+    /^\s*what'?s up/,
+    /^\s*what (is|are) you/,
+    /^\s*what can you do/,
+    /^\s*what is cloudtuner/,
+  ];
+
+  const isGreeting = greetingPatterns.some(pattern => pattern.test(q));
+  return isGreeting || (q.length < 25 && !looksDbRelated(q));
+}
+
 let cachedDomainInstruction = null;
 
 function resolvePromptPaths() {

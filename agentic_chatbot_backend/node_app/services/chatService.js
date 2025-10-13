@@ -1,6 +1,7 @@
 import { loadAllMCPTools } from "../lib/mcp.js";
 import {
   looksDbRelated,
+  isGreetingOrGeneral,
   buildToolSet,
   loadDomainInstruction,
 } from "../lib/agent.js";
@@ -29,8 +30,8 @@ export async function runChatWorkflow({ query, history, context }) {
     const queryHasId = uuidRegex.test(query);
 
     let augmentedQuery = query;
-    // If the query is generic (no ID) and context exists, append the relevant ID.
-    if (!queryHasId && context) {
+    // If the query is generic (no ID), not a greeting, and context exists, append the relevant ID.
+    if (!queryHasId && context && !isGreetingOrGeneral(query)) {
       if (context.cloud_account_id) {
         augmentedQuery = `${query} for cloud account ID \`${context.cloud_account_id}\``;
       } else if (context.organization_id) {
