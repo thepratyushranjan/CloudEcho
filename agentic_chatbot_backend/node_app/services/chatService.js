@@ -3,6 +3,7 @@ import {
   looksDbRelated,
   isGreetingOrGeneral,
   buildToolSet,
+  isFollowUp,
   loadDomainInstruction,
 } from "../lib/agent.js";
 import {
@@ -29,9 +30,13 @@ export async function runChatWorkflow({ query, history, context }) {
     const uuidRegex = /[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i;
     const queryHasId = uuidRegex.test(query);
 
+    const isFollowUpQuery = isFollowUp(query);
+
     let augmentedQuery = query;
-    // If the query is generic (no ID), not a greeting, and context exists, append the relevant ID.
-    if (!queryHasId && context && !isGreetingOrGeneral(query)) {
+    // If the query is generic (no ID), not a greeting or a follow-up, and context exists, append the relevant ID.
+    if (
+      !queryHasId && context && !isGreetingOrGeneral(query) && !isFollowUpQuery
+    ) {
       if (context.cloud_account_id) {
         augmentedQuery = `${query} for cloud account ID \`${context.cloud_account_id}\``;
       } else if (context.organization_id) {

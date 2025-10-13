@@ -30,6 +30,30 @@ export function isGreetingOrGeneral(query) {
   return isGreeting || (q.length < 25 && !looksDbRelated(q));
 }
 
+export function isFollowUp(query) {
+  const q = query.toLowerCase().trim();
+
+  // More comprehensive patterns to detect follow-up questions dynamically.
+  const followUpPatterns = [
+    // General requests for more information
+    /^(what|tell me|show me) more about (that|this|it|them)/,
+    /^(can you )?(explain|elaborate on|give me more details about) (that|this|it|them)/,
+    /^could you (please )?provide (more|further|a more detailed) (info|information|explanation|details)/,
+    /in more detail/,
+
+    // Questions about the previous response
+    /^(that's|that is) interesting, can you/,
+    /^(and )?what about/,
+    /^why is (that|it)/,
+    /what does (that|it) mean/,
+    /how did you (get|find|determine) that/,
+    /what about the (first|second|third|last|other) one/,
+    /^(show|format|present) this (data|info|information) (as a|in a) (table|list)/,
+  ];
+
+  return followUpPatterns.some(pattern => pattern.test(q));
+}
+
 let cachedDomainInstruction = null;
 
 function resolvePromptPaths() {
