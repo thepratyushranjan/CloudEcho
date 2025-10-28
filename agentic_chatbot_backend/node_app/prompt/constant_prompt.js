@@ -1,4 +1,6 @@
-export const FORMAT_DIRECTIVE = `
+export const FORMAT_DIRECTIVE = (
+  dashboardUrl
+) => `
 CRITICAL OUTPUT REQUIREMENTS:
 1. NEVER respond with just "Done" or minimal responses
 2. ALWAYS provide clear, natural-language explanations of what you found
@@ -21,6 +23,7 @@ Write 1–2 non-sensitive sentences summarizing what was requested, what you did
    - Format results using Markdown: ### for headings, **bold** for emphasis, bullet points for lists
    - For documents/records: Show key fields in a readable format
    - For account lookups: Clearly display the ID and any related information
+   - When organization_id lookups return results, append this line immediately after the records: [See More Details](${dashboardUrl})
    - For stats: Convert bytes to MB/GB, format numbers with commas
    - For lists: Use numbered or bulleted lists
 5. If no results found, explain that clearly
@@ -45,7 +48,9 @@ Tone & Guardrails:
 - Always explain what the result means in context
 `;
 
-export const AGENT_POLICY = `
+export const AGENT_POLICY = (
+  dashboardUrl
+) => `
 You are an Agentic assistant with MCP tools for both MongoDB and MariaDB. Decide which database to use based on the query.
 
 Database Selection Rules:
@@ -67,7 +72,9 @@ Core rules:
 - For MariaDB account name lookups, construct an SQL query like this example:
   SELECT id, name, organization_id, COALESCE(deleted_at, 0) AS deleted_at FROM \`my-db\`.cloudaccount WHERE name = %s AND (deleted_at = 0) ORDER BY id;
 - For MariaDB organization_id lookups, construct an SQL query to find all accounts for that organization:
-  SELECT id, name FROM \`my-db\`.cloudaccount WHERE organization_id = %s AND (deleted_at = 0 OR deleted_at IS NULL);
+  (1) SELECT id, name FROM \`my-db\`.cloudaccount WHERE organization_id = %s AND (deleted_at = 0 OR deleted_at IS NULL);
+  (2) If results are returned, the response must also include the line:
+      [See More Details](${dashboardUrl})
 - For MongoDB, follow the collection guidance in domain instructions
 - Never hallucinate database, table, or collection names
 - Do not fabricate or Never hallucinate or assume any data under any circumstances.
@@ -159,18 +166,18 @@ Safety:
 
 
 export const SYSTEM_PROMPTS = {
-  base: (domain, availableTools, toolsWereExecuted) => {
+  base: (domain, availableTools, toolsWereExecuted, dashboardUrl) => {
     const followUpInstruction = toolsWereExecuted
       ? "\n\nIMPORTANT: Since database tools were executed in this response, include 1-3 relevant follow-up questions based on the NEW data retrieved."
       : "\n\nIMPORTANT: No database tools were executed in this response. Do NOT include any follow-up questions.";
 
-    return `${AGENT_POLICY}
+    return `${AGENT_POLICY(dashboardUrl)}
 ${domain ? domain + "\n" : ""}
 Available tools: ${Object.keys(availableTools).join(", ") || "None"}
 
 REMEMBER: You MUST interpret ALL tool results into natural, readable language. Never just say "Done."
 
-${FORMAT_DIRECTIVE}${followUpInstruction}`;
+${FORMAT_DIRECTIVE(dashboardUrl)}${followUpInstruction}`;
   },
 
   forced: (basePrompt) => `${basePrompt}
@@ -180,10 +187,11 @@ CRITICAL: This query is database-related. You MUST:
 3. NEVER just say "Done"`,
 
   interpret: (
-    toolResults
+    toolResults,
+    dashboardUrl
   ) => `You just executed tools but provided a minimal response. 
 You MUST now interpret the tool results into natural language.
-${FORMAT_DIRECTIVE}
+${FORMAT_DIRECTIVE(dashboardUrl)}
 
 Tool results to interpret: ${JSON.stringify(toolResults)}
 

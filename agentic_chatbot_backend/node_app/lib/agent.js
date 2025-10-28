@@ -48,7 +48,7 @@ export function isFollowUp(query) {
     /what does (that|it) mean/,
     /how did you (get|find|determine) that/,
     /what about the (first|second|third|last|other) one/,
-    /^(show|format|present) this (data|info|information) (as a|in a) (table|list)/,
+    /^(show|format|present) this (data|info|information) (as a|in a) (table|list) (comparison with|comparison between)/,
   ];
 
   return followUpPatterns.some(pattern => pattern.test(q));

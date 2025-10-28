@@ -5,6 +5,7 @@ export const CONFIG = {
   CHUNK_SIZE: 30,
   STREAM_DELAY: 10,
   MAX_TOOL_ROUNDS: 3,
+  DASHBOARD_URL: process.env.CLOUDTUNER_DASHBOARD_URL || "https://localhost/",
 };
 
 export const BUDGETS = {

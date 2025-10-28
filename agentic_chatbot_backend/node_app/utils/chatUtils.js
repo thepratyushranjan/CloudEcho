@@ -3,6 +3,7 @@ import { CONFIG } from "./config.js";
 import { google } from "@ai-sdk/google";
 
 const FOLLOWUP_MARKER = "**What would you like to explore next?**";
+const DASHBOARD_URL = CONFIG.DASHBOARD_URL;
 
 export const SYSTEM_PROMPTS = {
   base: (domain, availableTools, toolsWereExecuted) => {
@@ -10,13 +11,13 @@ export const SYSTEM_PROMPTS = {
       ? "\n\nIMPORTANT: Since database tools were executed in this response, include 1-3 relevant follow-up questions based on the NEW data retrieved."
       : "\n\nIMPORTANT: No database tools were executed in this response. Do NOT include any follow-up questions.";
 
-    return `${AGENT_POLICY}
+    return `${AGENT_POLICY(DASHBOARD_URL)}
 ${domain ? domain + "\n" : ""}
 Available tools: ${Object.keys(availableTools).join(", ") || "None"}
 
 REMEMBER: You MUST interpret ALL tool results into natural, readable language. Never just say "Done."
 
-${FORMAT_DIRECTIVE}${followUpInstruction}`;
+${FORMAT_DIRECTIVE(DASHBOARD_URL)}${followUpInstruction}`;
   },
 
   forced: (basePrompt) => `${basePrompt}
@@ -29,7 +30,7 @@ CRITICAL: This query is database-related. You MUST:
     toolResults
   ) => `You just executed tools but provided a minimal response. 
 You MUST now interpret the tool results into natural language.
-${FORMAT_DIRECTIVE}
+${FORMAT_DIRECTIVE(DASHBOARD_URL)}
 
 Tool results to interpret: ${JSON.stringify(toolResults)}
 

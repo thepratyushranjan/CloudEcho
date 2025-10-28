@@ -33,6 +33,11 @@ def resolve_node_timeout() -> float | None:
     return None if value <= 0 else value
 
 
+def resolve_dashboard_url() -> str:
+    """Return the CloudTuner dashboard URL, falling back to the dev environment."""
+    return getenv("CLOUDTUNER_DASHBOARD_URL", "https://localhost/")
+
+
 __all__ = [
     "BASE_DIR",
     "REPO_ROOT",
@@ -41,6 +46,7 @@ __all__ = [
     "MCP_STATUS_SCRIPT",
     "resolve_node_executable",
     "resolve_node_timeout",
+    "resolve_dashboard_url",
 ]
 
 class Config:
@@ -54,3 +60,6 @@ class Config:
         self.POSTGRES_CONNECTION = os.getenv("POSTGRES_CONNECTION")
         if not self.POSTGRES_CONNECTION:
             raise ValueError("Missing environment variable: POSTGRES_CONNECTION")
+
+        # CloudTuner dashboard URL for user-facing links
+        self.CLOUDTUNER_DASHBOARD_URL = resolve_dashboard_url()

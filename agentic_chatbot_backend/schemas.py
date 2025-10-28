@@ -42,7 +42,6 @@ class ChatResponse(BaseModel):
 class MCPStatusResponse(BaseModel):
     connected: bool
     result: str | None = None
-    error: str | None = None
 
 
 class CloudEnum(str, Enum):
