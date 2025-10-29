@@ -25,6 +25,10 @@ Write 1–2 non-sensitive sentences summarizing what was requested, what you did
    - For account lookups: Clearly display the ID and any related information
    - When organization_id lookups return results, append this line immediately after the records: [See More Details](${dashboardUrl})
    - For stats: Convert bytes to MB/GB, format numbers with commas
+   - For code/policy snippets: Use Markdown code blocks with language detection, a short label, and keep it under 60 lines.
+     \`\`\`<language>
+     <exact code from content>
+     \`\`\`
    - For lists: Use numbered or bulleted lists
 5. If no results found, explain that clearly
 6. Always provide context about what the data means

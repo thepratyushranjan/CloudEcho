@@ -6,5 +6,9 @@
   "maria-http": {
     "transport": "http",
     "url": "${MARIA_MCP_CONNECTION_STRING}"
+  },
+  "cloudtuner-mcp": {
+    "transport": "sse",
+    "url": "${RAG_MCP_CONNECTION_STRING}"
   }
 }

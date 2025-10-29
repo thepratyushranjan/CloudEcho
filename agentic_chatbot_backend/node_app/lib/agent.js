@@ -122,6 +122,7 @@ export async function planTools(model, historyMessages, tools, providerOptions) 
 Database Selection Rules:
 - For cloud account names, account IDs, organization ID, user lookups → prefer mariadb-mcp-server.execute_sql
 - For cloud costs, expenses, resources, security checks, Recommendations → use MongoDB tools
+- For questions about CloudTuner, its capabilities, how it works, its anomaly detection, its quotas and budgets, its clean-up Scripts, its S3 Duplicate Finder , its tagging policies, or AWS integration / Google Cloud(GCP) integration / Microsoft Azure integration → use cloudtuner-mcp
 - For MongoDB queries → use appropriate mongodb tools (find, aggregate, count, etc.)
 - In MongoDB queries, do not fabricate or assume any data under any circumstances.
 

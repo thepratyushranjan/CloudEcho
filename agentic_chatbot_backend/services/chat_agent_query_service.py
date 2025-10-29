@@ -27,9 +27,10 @@ class SimpleQueryService:
                 print("FAQ result found, returning it.")
                 return faq_result
             merged_content = perform_simple_similarity_search(collection_name, query, top_k=k)
-            llm_generator = LlmGenerator()
-            final_response = llm_generator.llm_query(merged_content, query)
-            return final_response
+            print(merged_content)
+            # llm_generator = LlmGenerator()
+            # final_response = llm_generator.llm_query(merged_content, query)
+            return merged_content
             
         except Exception as e:
             raise Exception(f"Error in query_document: {e}")
