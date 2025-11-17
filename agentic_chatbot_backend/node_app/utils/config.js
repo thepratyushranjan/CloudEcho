@@ -8,16 +8,16 @@ export const CONFIG = {
   DASHBOARD_URL: process.env.CLOUDTUNER_DASHBOARD_URL || "https://localhost/",
 };
 
-export const BUDGETS = {
-  PLAN: getEnvInt("THINKING_BUDGET_PLAN"),
-  EXECUTE: getEnvInt("THINKING_BUDGET_EXECUTE"),
-  RETRY: getEnvInt("THINKING_BUDGET_RETRY"),
-  INTERPRET: getEnvInt("THINKING_BUDGET_INTERPRET"),
-};
-
 function getEnvInt(name, fallback) {
   const raw = process.env[name];
   if (!raw) return fallback;
   const n = Number(raw);
   return Number.isFinite(n) ? n : fallback;
 }
+
+export const BUDGETS = {
+  PLAN: getEnvInt("THINKING_BUDGET_PLAN"),
+  EXECUTE: getEnvInt("THINKING_BUDGET_EXECUTE"),
+  RETRY: getEnvInt("THINKING_BUDGET_RETRY"),
+  INTERPRET: getEnvInt("THINKING_BUDGET_INTERPRET"),
+};

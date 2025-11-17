@@ -11,10 +11,21 @@ export const SYSTEM_PROMPTS = {
       ? "\n\nIMPORTANT: Since database tools were executed in this response, include 1-3 relevant follow-up questions based on the NEW data retrieved."
       : "\n\nIMPORTANT: No database tools were executed in this response. Do NOT include any follow-up questions.";
 
+    const mongoToolAvailable = Object.keys(availableTools).some(t => t.includes('mongo-http.aggregate'));
+    const mongoWarning = mongoToolAvailable ? `
+
+🚨 CRITICAL JSON FORMAT WARNING:
+When calling mongo-http.aggregate, you MUST use proper JSON key formatting:
+- CORRECT: {"$match": {"cloud_account_id": "..."}}
+- WRONG: {"'$match'": {"'cloud_account_id'": "..."}}
+DO NOT add single quotes inside double quotes for keys. Use ONLY double quotes.
+Example: [{"$match": {"_last_seen_date": {"$gte": "2025-05-01T00:00:00.000Z"}}}]
+` : '';
+
     return `${AGENT_POLICY(DASHBOARD_URL)}
 ${domain ? domain + "\n" : ""}
 Available tools: ${Object.keys(availableTools).join(", ") || "None"}
-
+${mongoWarning}
 REMEMBER: You MUST interpret ALL tool results into natural, readable language. Never just say "Done."
 
 ${FORMAT_DIRECTIVE(DASHBOARD_URL)}${followUpInstruction}`;
@@ -26,9 +37,7 @@ CRITICAL: This query is database-related. You MUST:
 2. Interpret ALL results into natural language
 3. NEVER just say "Done"`,
 
-  interpret: (
-    toolResults
-  ) => `You just executed tools but provided a minimal response. 
+  interpret: (toolResults) => `You just executed tools but provided a minimal response. 
 You MUST now interpret the tool results into natural language.
 ${FORMAT_DIRECTIVE(DASHBOARD_URL)}
 

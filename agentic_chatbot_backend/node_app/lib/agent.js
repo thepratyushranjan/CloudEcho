@@ -161,103 +161,113 @@ Return STRICT JSON only: {"tools":[{"name":"<exact-tool-name>","why":"<short>"}]
   }
 }
 
+function extractTextContents(result) {
+  const contents = Array.isArray(result?.content)
+    ? result.content
+    : [result?.content].filter(Boolean);
+  
+  return contents
+    .filter((c) => c?.type === "text" && c?.text)
+    .map((c) => c.text);
+}
+
+function isEmptyResult(text) {
+  return (
+    text === "[]" ||
+    /^\s*\{\s*\}\s*$/.test(text) ||
+    /\bno results?\b/i.test(text) ||
+    /\bnot found\b/i.test(text)
+  );
+}
+
+function hasData(text) {
+  try {
+    const parsed = JSON.parse(text);
+    if (Array.isArray(parsed)) return parsed.length > 0;
+    if (parsed && typeof parsed === "object") return Object.keys(parsed).length > 0;
+    return false;
+  } catch {
+    return text.length > 0;
+  }
+}
+
+function formatParsedResults(parsed) {
+  if (Array.isArray(parsed) && parsed.length > 0) {
+    let output = `I found ${parsed.length} result${parsed.length !== 1 ? "s" : ""}:\n\n`;
+    parsed.forEach((row, i) => {
+      output += `**Result ${i + 1}:**\n`;
+      for (const [key, value] of Object.entries(row)) {
+        output += `- ${key}: ${value}\n`;
+      }
+      output += "\n";
+    });
+    return output;
+  }
+  
+  if (typeof parsed === "object") {
+    let output = "Here's the result:\n\n";
+    for (const [key, value] of Object.entries(parsed)) {
+      output += `- ${key}: ${value}\n`;
+    }
+    return output;
+  }
+  
+  return null;
+}
+
 export function ensureMeaningfulResponse(text, toolResults) {
-  const minimalResponses = [
-    "done",
-    "done.",
-    "completed",
-    "finished",
-    "ok",
-    "okay",
-  ];
+  const minimalResponses = ["done", "done.", "completed", "finished", "ok", "okay"];
   const isMinimal = minimalResponses.includes(text.toLowerCase().trim());
 
-  if (toolResults && toolResults.length > 0) {
-    let sawAnyData = false;
-    let sawExplicitZero = false;
-    for (const result of toolResults) {
-      const contents = Array.isArray(result?.content)
-        ? result.content
-        : [result?.content].filter(Boolean);
-      for (const c of contents) {
-        if (c?.type === "text" && typeof c.text === "string") {
-          const t = c.text.trim();
-          if (!t) continue;
-          if (
-            t === "[]" ||
-            /^\s*\{\s*\}\s*$/.test(t) ||
-            /\bno results?\b/i.test(t) ||
-            /\bnot found\b/i.test(t)
-          ) {
-            sawExplicitZero = true;
-            continue;
-          }
-          try {
-            const parsed = JSON.parse(t);
-            if (Array.isArray(parsed) && parsed.length === 0) {
-              sawExplicitZero = true;
-            } else if (
-              parsed &&
-              typeof parsed === "object" &&
-              Object.keys(parsed).length === 0
-            ) {
-              sawExplicitZero = true;
-            } else {
-              sawAnyData = true;
-            }
-          } catch {
-            if (t.length > 0) sawAnyData = true;
-          }
-        }
+  if (!toolResults?.length) return text;
+
+  // Check if we have any actual data
+  let sawAnyData = false;
+  let sawExplicitZero = false;
+
+  for (const result of toolResults) {
+    const textContents = extractTextContents(result);
+    
+    for (const t of textContents) {
+      const trimmed = t.trim();
+      if (!trimmed) continue;
+      
+      if (isEmptyResult(trimmed)) {
+        sawExplicitZero = true;
+      } else if (hasData(trimmed)) {
+        sawAnyData = true;
       }
-    }
-    if (!sawAnyData && sawExplicitZero) {
-      return "I couldn't find any matching records for your request. Please verify the ID or provide more context (e.g., account ID, organization ID, or resource details).";
     }
   }
 
-  if (isMinimal && toolResults && toolResults.length > 0) {
-    let fallback = "I've completed the operation. ";
-
-    for (const result of toolResults) {
-      if (result?.content) {
-        const content = Array.isArray(result.content)
-          ? result.content
-          : [result.content];
-        const textContent = content
-          .filter((c) => c?.type === "text" && c?.text)
-          .map((c) => c.text);
-
-        if (textContent.length > 0) {
-          if (textContent[0].includes("id") || textContent[0].includes("account")) {
-            try {
-              const parsed = JSON.parse(textContent[0]);
-              if (Array.isArray(parsed) && parsed.length > 0) {
-                fallback = `I found ${parsed.length} result${parsed.length !== 1 ? "s" : ""}:\n\n`;
-                parsed.forEach((row, i) => {
-                  fallback += `**Result ${i + 1}:**\n`;
-                  for (const [key, value] of Object.entries(row)) {
-                    fallback += `- ${key}: ${value}\n`;
-                  }
-                  fallback += "\n";
-                });
-              } else if (typeof parsed === "object") {
-                fallback = "Here's the result:\n\n";
-                for (const [key, value] of Object.entries(parsed)) {
-                  fallback += `- ${key}: ${value}\n`;
-                }
-              }
-            } catch {
-              fallback += textContent.join("\n\n");
-            }
-          } else if (textContent.length) {
-            fallback += textContent.join("\n\n");
-          }
-        }
-      }
-    }
-    return fallback.trim();
+  if (!sawAnyData && sawExplicitZero) {
+    return "I couldn't find any matching records for your request. Please verify the ID or provide more context (e.g., account ID, organization ID, or resource details).";
   }
 
-  return text;
+  if (!isMinimal) return text;
+
+  // Build fallback response for minimal text
+  let fallback = "I've completed the operation. ";
+
+  for (const result of toolResults) {
+    const textContent = extractTextContents(result);
+
+    if (textContent.length > 0) {
+      const firstText = textContent[0];
+      
+      if (firstText.includes("id") || firstText.includes("account")) {
+        try {
+          const parsed = JSON.parse(firstText);
+          const formatted = formatParsedResults(parsed);
+          if (formatted) return formatted.trim();
+        } catch {
+          fallback += textContent.join("\n\n");
+        }
+      } else {
+        fallback += textContent.join("\n\n");
+      }
+    }
+  }
+
+  return fallback.trim();
 }

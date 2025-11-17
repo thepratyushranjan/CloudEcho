@@ -1,5 +1,8 @@
-
-function fixMongoDBPipeline(pipeline) {
+/**
+ * Fixes single-quote issue in MongoDB pipelines
+ * Converts {"'$match'": ...} to {"$match": ...}
+ */
+export function fixMongoDBPipeline(pipeline) {
   if (!Array.isArray(pipeline)) {
     return pipeline;
   }
@@ -9,60 +12,56 @@ function fixMongoDBPipeline(pipeline) {
     
     // Check if fix is needed
     if (!pipelineStr.includes("'$") && !pipelineStr.includes("'_")) {
-      return pipeline; // No fix needed
+      return pipeline;
     }
-
-    console.log("🔧 Fixing MongoDB pipeline - removing single quotes from keys");
     
     // Fix single quotes around keys
     const fixedStr = pipelineStr
-      .replace(/"'(\$[^']+)'"\s*:/g, '"$1":')  // Fix "'$match'": -> "$match":
-      .replace(/"'(_[^']+)'"\s*:/g, '"$1":')   // Fix "'_field'": -> "_field":
-      .replace(/"'([a-zA-Z][^']+)'"\s*:/g, '"$1":');  // Fix "'field'": -> "field":
+      .replace(/"'(\$[^']+)'"\s*:/g, '"$1":')
+      .replace(/"'(_[^']+)'"\s*:/g, '"$1":')
+      .replace(/"'([a-zA-Z][^']+)'"\s*:/g, '"$1":');
     
-    const fixed = JSON.parse(fixedStr);
-    console.log("✅ Pipeline fixed successfully");
-    return fixed;
+    return JSON.parse(fixedStr);
   } catch (err) {
-    console.error("❌ Failed to fix pipeline:", err.message);
+    console.error("Failed to fix pipeline:", err.message);
     return pipeline;
   }
 }
 
 /**
- * Wraps MCP tools to fix MongoDB pipeline issues
+ * Wraps MCP tools to fix MongoDB pipeline issues before execution
  * @param {Object} tools - Original MCP tools
- * @returns {Object} - Wrapped tools
+ * @returns {Object} - Wrapped tools with pipeline fixes
  */
-export function wrapTools(tools) {
+export function wrapMongoTools(tools) {
   const wrapped = {};
   
   for (const [name, tool] of Object.entries(tools)) {
     if (name === 'mongo-http.aggregate') {
-      // Wrap the aggregate tool to fix pipeline
       wrapped[name] = {
-        ...tool,
+        description: tool.description,
+        parameters: tool.parameters,
         execute: async (params) => {
-          console.log(`\n=== Intercepting ${name} ===`);
-          console.log("Original params:", JSON.stringify(params, null, 2));
-          
-          // Fix the pipeline if it exists
           if (params.pipeline) {
-            const fixed = fixMongoDBPipeline(params.pipeline);
-            if (fixed !== params.pipeline) {
-              console.log("Pipeline was fixed");
-              params = { ...params, pipeline: fixed };
+            // Parse pipeline if it's a string
+            let pipeline = params.pipeline;
+            if (typeof pipeline === 'string') {
+              try {
+                pipeline = JSON.parse(pipeline);
+              } catch (err) {
+                console.error("Failed to parse pipeline:", err.message);
+              }
             }
+            
+            // Fix single-quote issues
+            const fixedPipeline = fixMongoDBPipeline(pipeline);
+            params = { ...params, pipeline: fixedPipeline };
           }
-          
-          console.log("Final params:", JSON.stringify(params, null, 2));
-          
-          // Call the original tool
+
           return tool.execute(params);
         }
       };
     } else {
-      // Pass through other tools unchanged
       wrapped[name] = tool;
     }
   }

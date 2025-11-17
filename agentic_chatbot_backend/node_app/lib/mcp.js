@@ -5,6 +5,7 @@ import { experimental_createMCPClient } from "@ai-sdk/mcp";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import { fixMongoDBPipeline } from "./toolWrapper.js";
 
 const CURRENT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_CONFIG = path.resolve(CURRENT_DIR, "../../mcp-config.json");
@@ -106,38 +107,6 @@ async function loadConfig() {
   return JSON.parse(raw);
 }
 
-/**
- * Fixes single-quote issue in MongoDB pipelines
- */
-function fixMongoDBPipeline(pipeline) {
-  if (!Array.isArray(pipeline)) {
-    return pipeline;
-  }
-
-  try {
-    const pipelineStr = JSON.stringify(pipeline);
-    
-    if (!pipelineStr.includes("'$") && !pipelineStr.includes("'_")) {
-      return pipeline; // No fix needed
-    }
-    
-    // Fix single quotes around keys
-    const fixedStr = pipelineStr
-      .replace(/"'(\$[^']+)'"\s*:/g, '"$1":')  // Fix "'$match'": -> "$match":
-      .replace(/"'(_[^']+)'"\s*:/g, '"$1":')   // Fix "'_field'": -> "_field":
-      .replace(/"'([a-zA-Z][^']+)'"\s*:/g, '"$1":');  // Fix "'field'": -> "field":
-    
-    // console.log("AFTER:", fixedStr.substring(0, 200));
-    
-    const fixed = JSON.parse(fixedStr);
-    // console.log("✅ Pipeline fixed successfully");
-    return fixed;
-  } catch (err) {
-    console.error("Failed to fix pipeline:", err.message);
-    return pipeline; // Return original if fix fails
-  }
-}
-
 export async function loadAllMCPTools() {
   const config = await loadConfig();
 
@@ -165,20 +134,10 @@ export async function loadAllMCPTools() {
             toolsMap[fullName] = {
               ...def,
               execute: async (params) => {
-                
-                // Fix the pipeline if it exists
                 if (params.pipeline) {
-                  const originalPipeline = params.pipeline;
                   const fixedPipeline = fixMongoDBPipeline(params.pipeline);
-                  
-                  if (fixedPipeline !== originalPipeline) {
-                    params = { ...params, pipeline: fixedPipeline };
-                  } else {
-                    // console.log("✅ Pipeline looks good, no fix needed");
-                  }
+                  params = { ...params, pipeline: fixedPipeline };
                 }
-                
-                // Call the original tool
                 return def.execute(params);
               }
             };
