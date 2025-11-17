@@ -106,6 +106,38 @@ async function loadConfig() {
   return JSON.parse(raw);
 }
 
+/**
+ * Fixes single-quote issue in MongoDB pipelines
+ */
+function fixMongoDBPipeline(pipeline) {
+  if (!Array.isArray(pipeline)) {
+    return pipeline;
+  }
+
+  try {
+    const pipelineStr = JSON.stringify(pipeline);
+    
+    if (!pipelineStr.includes("'$") && !pipelineStr.includes("'_")) {
+      return pipeline; // No fix needed
+    }
+    
+    // Fix single quotes around keys
+    const fixedStr = pipelineStr
+      .replace(/"'(\$[^']+)'"\s*:/g, '"$1":')  // Fix "'$match'": -> "$match":
+      .replace(/"'(_[^']+)'"\s*:/g, '"$1":')   // Fix "'_field'": -> "_field":
+      .replace(/"'([a-zA-Z][^']+)'"\s*:/g, '"$1":');  // Fix "'field'": -> "field":
+    
+    // console.log("AFTER:", fixedStr.substring(0, 200));
+    
+    const fixed = JSON.parse(fixedStr);
+    // console.log("✅ Pipeline fixed successfully");
+    return fixed;
+  } catch (err) {
+    console.error("Failed to fix pipeline:", err.message);
+    return pipeline; // Return original if fix fails
+  }
+}
+
 export async function loadAllMCPTools() {
   const config = await loadConfig();
 
@@ -127,7 +159,32 @@ export async function loadAllMCPTools() {
       try {
         const tools = await client.tools();
         for (const [name, def] of Object.entries(tools || {})) {
-          toolsMap[`${provider}.${name}`] = def;
+          const fullName = `${provider}.${name}`;
+
+          if (fullName === 'mongo-http.aggregate') {
+            toolsMap[fullName] = {
+              ...def,
+              execute: async (params) => {
+                
+                // Fix the pipeline if it exists
+                if (params.pipeline) {
+                  const originalPipeline = params.pipeline;
+                  const fixedPipeline = fixMongoDBPipeline(params.pipeline);
+                  
+                  if (fixedPipeline !== originalPipeline) {
+                    params = { ...params, pipeline: fixedPipeline };
+                  } else {
+                    // console.log("✅ Pipeline looks good, no fix needed");
+                  }
+                }
+                
+                // Call the original tool
+                return def.execute(params);
+              }
+            };
+          } else {
+            toolsMap[fullName] = def;
+          }
         }
         clients.push(client);
       } catch (err) {

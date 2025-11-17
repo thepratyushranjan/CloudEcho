@@ -52,7 +52,7 @@ For AWS instance or service pricing, query the `aws_prices` collection using the
 
 ---
 
-### Resource and Asset Queries
+### Resource and Asset Queries and Month wise/ Date wise cost
 
 #### Primary Source:
 The `resources` collection stores information about cloud resources.
@@ -181,6 +181,56 @@ To effectively query the `archived_recommendations` collection, the following co
 
 #### Database Migrations:
 The `database_migrations` collection tracks changes to the database schema. Avoid querying this unless explicitly needed to inspect schema changes.
+
+---
+
+## MongoDB Query Format (CRITICAL)
+
+When using mongo-http.aggregate tool, you MUST use **MongoDB Extended JSON v2** format:
+
+### ✅ CORRECT Pipeline Format:
+```json
+[
+  {
+    "$match": {
+      "cloud_account_id": "9d3a6221-2d42-40ba-8aad-1f50c0cb4bdf",
+      "_last_seen_date": {
+        "$gte": {"$date": "2025-03-01T00:00:00.000Z"},
+        "$lt": {"$date": "2025-03-31T00:00:00.000Z"}
+      }
+    }
+  },
+  {
+    "$group": {
+      "_id": null,
+      "overallTotalCost": {"$sum": "$total_cost"},
+      "docsMatched": {"$sum": 1}
+    }
+  },
+  {
+    "$project": {
+      "_id": 0,
+      "overallTotalCost": 1,
+      "docsMatched": 1
+    }
+  }
+]
+```
+
+### Format Rules:
+1. **All keys must be quoted strings** (JSON requirement)
+2. **Stage operators**: `"$match"`, `"$group"`, `"$project"`, `"$sort"`, etc.
+3. **Query operators**: `"$gte"`, `"$lt"`, `"$eq"`, `"$in"`, etc.
+4. **Aggregation operators**: `"$sum"`, `"$avg"`, `"$max"`, `"$min"`, etc.
+5. **Field references in expressions**: `"$total_cost"`, `"$field_name"` (quoted string values)
+6. **Dates**: `{"$date": "YYYY-MM-DDTHH:mm:ss.sssZ"}` format
+7. **Numbers**: Raw numbers without quotes: `1`, `0`, `100`
+
+### ❌ WRONG Formats (Will Cause Errors):
+- `ISODate("2025-03-01")` → Use `{"$date": "2025-03-01T00:00:00.000Z"}`
+- Unquoted keys: `{$match: {...}}` → Use `{"$match": {...}}`
+- Single quotes: `{'$match': {...}}` → Use `{"$match": {...}}`
+- Extra quotes: `"'$match'"` → Use `"$match"`
 
 ---
 

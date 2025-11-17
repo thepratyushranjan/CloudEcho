@@ -50,15 +50,26 @@ async def _invoke_node(
             f"Node helper timed out after {timeout} seconds"
         ) from exc
 
+    stdout_str = stdout.decode('utf-8', errors='ignore')
+    stderr_str = stderr.decode('utf-8', errors='ignore')
+
+    print("--- Node.js stdout ---")
+    print(stdout_str)
+    print("--- End Node.js stdout ---")
+
+    if stderr_str:
+        print("--- Node.js stderr ---")
+        print(stderr_str)
+        print("--- End Node.js stderr ---")
+
     if proc.returncode != 0:
         raise NodeBridgeError(
-            f"Node helper exited with {proc.returncode}: {stderr.decode('utf-8', errors='ignore')}"
+            f"Node helper exited with {proc.returncode}: {stderr_str}"
         )
 
     try:
         # The Node.js script may output MCP log messages to stdout before the JSON
         # Find the JSON response by looking for the last line that starts with '{'
-        stdout_str = stdout.decode("utf-8")
         lines = stdout_str.strip().split('\n')
 
         # Find the JSON response (should be the last line starting with '{')

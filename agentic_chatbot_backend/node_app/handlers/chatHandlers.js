@@ -17,13 +17,86 @@ import {
   isMinimalResponse,
 } from "../utils/chatUtils.js";
 
+/**
+ * Fixes single-quote issue in MongoDB pipelines
+ */
+function fixMongoDBPipeline(pipeline) {
+  if (!Array.isArray(pipeline)) {
+    return pipeline;
+  }
+
+  try {
+    const pipelineStr = JSON.stringify(pipeline);
+    
+    // Check if fix is needed
+    if (!pipelineStr.includes("'$") && !pipelineStr.includes("'_")) {
+      return pipeline; // No fix needed
+    }
+    
+    // Fix single quotes around keys
+    const fixedStr = pipelineStr
+      .replace(/"'(\$[^']+)'"\s*:/g, '"$1":')
+      .replace(/"'(_[^']+)'"\s*:/g, '"$1":')
+      .replace(/"'([a-zA-Z][^']+)'"\s*:/g, '"$1":');
+    
+    return JSON.parse(fixedStr);
+  } catch (err) {
+    return pipeline;
+  }
+}
+
+/**
+ * Wraps tools to fix MongoDB pipeline issues before execution
+ */
+function wrapToolsWithFixer(tools) {
+  const wrapped = {};
+  
+  for (const [name, tool] of Object.entries(tools)) {
+    if (name === 'mongo-http.aggregate') {
+      wrapped[name] = {
+        description: tool.description,
+        parameters: tool.parameters,
+        execute: async (params) => {
+          
+          if (params.pipeline) {
+            // If pipeline is a string, parse it first
+            let pipeline = params.pipeline;
+            if (typeof pipeline === 'string') {
+              try {
+                pipeline = JSON.parse(pipeline);
+              } catch (err) {
+                console.error("Failed to parse pipeline:", err.message);
+              }
+            }
+            
+            // Fix single-quote issues
+            const fixedPipeline = fixMongoDBPipeline(pipeline);
+            params = { ...params, pipeline: fixedPipeline };
+          }
+
+          // Call the original tool
+          const result = await tool.execute(params);
+          return result;
+        }
+      };
+    } else {
+      wrapped[name] = tool;
+    }
+  }
+  
+  return wrapped;
+}
+
 export async function generateResponse(modelType, messages, tools, budget, signal) {
   const model = getModel(modelType);
-
+  
+  // Wrap tools to fix MongoDB pipeline issues
+  const wrappedTools = wrapToolsWithFixer(tools);
+  
   const { textStream, toolCalls, toolResults } = streamText({
     model,
     messages,
-    tools,
+    tools: wrappedTools,
     maxToolRoundtrips: CONFIG.MAX_TOOL_ROUNDS,
     abortSignal: signal,
     experimental_providerOptions: buildProviderOptions(budget),
@@ -34,10 +107,13 @@ export async function generateResponse(modelType, messages, tools, budget, signa
     text += chunk;
   }
 
+  const resolvedToolCalls = await toolCalls;
+  const resolvedToolResults = await toolResults;
+
   return {
     text,
-    toolCalls: await toolCalls,
-    toolResults: await toolResults,
+    toolCalls: resolvedToolCalls,
+    toolResults: resolvedToolResults,
   };
 }
 
@@ -141,7 +217,8 @@ export async function processWithTools(query, history, safeTools, domain) {
   }
 
   finalText = ensureMeaningfulResponse(finalText, result.toolResults);
-
+  // console.log("Tool Calls:", result.toolCalls);
+  console.log("Tool Results:", result.toolResults);
   return { result, finalText, toolsExecuted, plannedToolNames };
 }
 

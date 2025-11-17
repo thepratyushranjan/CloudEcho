@@ -64,11 +64,84 @@ Database Selection Rules:
 
 2. Use MongoDB tools for:
    - Cloud costs and expenses (raw_expenses collection)
-   - Resources and assets (resources collection)
+   - Resources and assets and month wise/ Date wise cost (resources collection)
    - Security checks and compliance (checklists collection)
    - Resource Configuration History (property_history collection)
    - Security Recommendations Archive (archived_recommendations collection)
    - Database: restapi
+
+CRITICAL MongoDB Pipeline Format:
+When calling mongo-http.aggregate, you MUST generate valid JSON with proper key formatting.
+
+🚨 CRITICAL ERROR TO AVOID:
+You are currently generating: {"'$match'": ...} with SINGLE QUOTES INSIDE DOUBLE QUOTES
+This is WRONG and causes: "Unrecognized pipeline stage name: ''$match''"
+
+The correct format uses ONLY double quotes for keys, NO single quotes:
+- CORRECT: {"$match": ...}
+- WRONG: {"'$match'": ...}
+- WRONG: {'"$match"': ...}
+
+⚠️ JSON Key Format Rules:
+In JSON, object keys are strings enclosed in double quotes. The dollar sign is part of the key name.
+- Key "$match" is written as: "$match" (double quotes, no single quotes)
+- Key "$gte" is written as: "$gte" (double quotes, no single quotes)
+- Key "cloud_account_id" is written as: "cloud_account_id" (double quotes, no single quotes)
+
+✅ CORRECT format - Use this EXACT structure:
+CRITICAL: Dates are stored as BSON Date objects, use Extended JSON v2 format: {"$date": "ISO-string"}
+[
+  {
+    "$match": {
+      "cloud_account_id": "9d3a6221-2d42-40ba-8aad-1f50c0cb4bdf",
+      "_last_seen_date": {
+        "$gte": {"$date": "2025-03-01T00:00:00.000Z"},
+        "$lt": {"$date": "2025-03-31T00:00:00.000Z"}
+      }
+    }
+  },
+  {
+    "$group": {
+      "_id": null,
+      "overallTotalCost": {"$sum": "$total_cost"},
+      "docsMatched": {"$sum": 1}
+    }
+  },
+  {
+    "$project": {
+      "_id": 0,
+      "overallTotalCost": 1,
+      "docsMatched": 1
+    }
+  }
+]
+
+🚨 YOU ARE MAKING THIS MISTAKE - STOP IT:
+Current output: [{"'$match'": {"'cloud_account_id'": "...", "'_last_seen_date'": {"'$gte'": "..."}}}]
+This is COMPLETELY WRONG - you are adding single quotes inside the double quotes!
+
+CORRECT output: [{"$match": {"cloud_account_id": "...", "_last_seen_date": {"$gte": "..."}}}]
+Notice: NO single quotes anywhere! Only double quotes for JSON keys.
+
+Format rules (READ CAREFULLY):
+1. Stage operators: "$match", "$group", "$project" (double quotes ONLY, no single quotes)
+2. Field names: "cloud_account_id", "_last_seen_date" (double quotes ONLY, no single quotes)
+3. Query operators: "$gte", "$lt", "$sum" (double quotes ONLY, no single quotes)
+4. Field references in values: "$total_cost" (double quotes ONLY, no single quotes)
+5. Date values: {"$date": "2025-03-01T00:00:00.000Z"} (Extended JSON v2 format for BSON dates)
+6. Numbers: 1, 0 (raw numbers, not strings)
+
+FEW-SHOT EXAMPLE - Copy this pattern:
+Query: "Show cost for March 2025"
+Correct pipeline parameter:
+[{"$match": {"cloud_account_id": "9d3a6221-2d42-40ba-8aad-1f50c0cb4bdf", "_last_seen_date": {"$gte": {"$date": "2025-03-01T00:00:00.000Z"}, "$lt": {"$date": "2025-03-31T00:00:00.000Z"}}}}, {"$group": {"_id": null, "totalCost": {"$sum": "$total_cost"}}}]
+
+❌ WRONG - These cause errors:
+- "'$match'" or "\"$match\"" → Use "$match" (one level of quotes)
+- ISODate("2025-03-01") → Use "2025-03-01T00:00:00.000Z"
+- {"$date": "..."} → Use "2025-03-01T00:00:00.000Z" (dates stored as strings)
+- Unquoted keys → All keys must be quoted
+- Single quotes → Use double quotes
 
 
 Core rules:
@@ -88,11 +161,12 @@ Core rules:
 
 DATE HANDLING RULE:
 - When a user provides one or more dates in a query:
-  - The first mentioned date = \`_first_seen_date\`
-  - The second mentioned date (if any) = \`_last_seen_date\`
-- Format: ISO 8601 with zeroed time + UTC offset
-  ISODate("YYYY-MM-DDT00:00:00.000+00:00")
-- If one date is provided → only \`_first_seen_date\` set
+  - The first mentioned date = \`_last_seen_date\` start
+  - The second mentioned date (if any) = \`_last_seen_date\` end
+- Format: ISO 8601 string with zeroed time and Z suffix
+  "YYYY-MM-DDT00:00:00.000Z"
+- Example: For "March 2025" use "$gte": "2025-03-01T00:00:00.000Z", "$lt": "2025-03-31T00:00:00.000Z"
+- If one date is provided → only \`_last_seen_date\` set
 - If no dates are provided → leave both unset
 
 CRITICAL OUTPUT RULES:
@@ -175,10 +249,21 @@ export const SYSTEM_PROMPTS = {
       ? "\n\nIMPORTANT: Since database tools were executed in this response, include 1-3 relevant follow-up questions based on the NEW data retrieved."
       : "\n\nIMPORTANT: No database tools were executed in this response. Do NOT include any follow-up questions.";
 
+    const mongoToolAvailable = Object.keys(availableTools).some(t => t.includes('mongo-http.aggregate'));
+    const mongoWarning = mongoToolAvailable ? `
+
+🚨 CRITICAL JSON FORMAT WARNING:
+When calling mongo-http.aggregate, you MUST use proper JSON key formatting:
+- CORRECT: {"$match": {"cloud_account_id": "..."}}
+- WRONG: {"'$match'": {"'cloud_account_id'": "..."}}
+DO NOT add single quotes inside double quotes for keys. Use ONLY double quotes.
+Example: [{"$match": {"_last_seen_date": {"$gte": "2025-05-01T00:00:00.000Z"}}}]
+` : '';
+
     return `${AGENT_POLICY(dashboardUrl)}
 ${domain ? domain + "\n" : ""}
 Available tools: ${Object.keys(availableTools).join(", ") || "None"}
-
+${mongoWarning}
 REMEMBER: You MUST interpret ALL tool results into natural, readable language. Never just say "Done."
 
 ${FORMAT_DIRECTIVE(dashboardUrl)}${followUpInstruction}`;
